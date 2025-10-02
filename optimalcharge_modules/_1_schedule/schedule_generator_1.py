@@ -145,23 +145,18 @@ class ScheduleGenerator:
         
         return consumption_factors    
       
-    def consumption_rate(self, total_distance:float, max_energy:float) -> float:
+    def consumption_rate(self, total_distance: float) -> float:
         """
-        Calculate the consumption rate (kWh/km) based on total distance and max energy.
+        Calculate the consumption rate (kWh/km) based on total distance.
 
         :param total_distance: Total distance traveled in km
-        :param max_energy: Maximum energy available in kWh
         :return: Consumption rate in kWh/km
         """
+        rate = np.random.normal(self.vc.consumption_mean, self.vc.consumption_std)
+        rate = max(rate, self.vc.consumption_min)
+        rate = min(rate, self.vc.consumption_max)
         
-        rate= np.random.normal(self.vc.consumption_mean, self.vc.consumption_std)
-        rate = max([rate, self.vc.consumption_min])
-        rate = min([rate, self.vc.consumption_max])
-        
-        if total_distance > 0:
-            return rate = min([rate, max_energy / total_distance])
-        
-        return consumption_rate
+        return rate
     
     
     
