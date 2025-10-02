@@ -112,11 +112,13 @@ class ScheduleGenerator:
         :return: pd.DataFrame of the schedule
         """
 
-        if self.schedule_type == self.schedule_type.Typea:
+        if self.schedule_type == scheduletype.Typea:
             return self.generate_typea()        
-        elif self.schedule_type == self.schedule_type.Typeb:
+        elif self.schedule_type == scheduletype.Typeb:
             return self.generate_typeb() 
-      
+        elif self.schedule_type == scheduletype.Typec:
+            return self.generate_typec()
+        
         else:
             raise TypeError("Company type not found!")
 
