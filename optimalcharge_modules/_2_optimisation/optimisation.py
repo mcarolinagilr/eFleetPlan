@@ -113,7 +113,7 @@ def assign(opt_config):
 
     
 
-def optimisation(opt_config, cost_config):
+def optimisation(opt_config, cost_config, power_config):
     
     # Funtion to assign the data to the optimisation module
     EV_availability, Distance_km, Energy_Consumption_km, Price, Battery_Limitation, days, EVs = assign(opt_config)
@@ -126,6 +126,8 @@ def optimisation(opt_config, cost_config):
     Battery_Limitation = {k: float(v) for k, v in Battery_Limitation.items()}
     days = int(days)
     EVs = int(EVs)
+    Battery_LimitMax = power_config["Battery_Maximum Limit"]  # Maximum battery limit
+    Battery_LimitMin = power_config["Battery_Minimum Limit"]  # Minimum battery limit
     
     # Create Model
     m = pyo.ConcreteModel()
@@ -138,9 +140,10 @@ def optimisation(opt_config, cost_config):
     m.f = pyo.Set(initialize=fast_charging_levels)                 # Fast charging levels
 
     # Parameters
-    Ch_losses = 0.964
+    Ch_losses = power_config["Charging_losses"]  # Charging efficiency
+    
     Infrastructure_life = cost_config["Infrastructure_life"]
-    r = 0.05
+    r = cost_config["Discount_rate"]
     Annuity_factor = (r * (1 + r) ** Infrastructure_life) / ((1 + r) ** Infrastructure_life - 1)
 
     Infrastructure_cost = cost_config["Infrastructure_cost"]
@@ -159,12 +162,11 @@ def optimisation(opt_config, cost_config):
     Price_FixedrateDT = cost_config["Price_FixedrateDT"]
     Demand_rate = cost_config["Demand_rate"]
     Price_FixedrateRoute = cost_config["Price_FixedrateRoute"]
-    ACC = 3500
-    B_Calendar = 0.02
-    Min_Charge_Energy = 2
+    ACC = power_config["Accumulated_Cycle_Capacity"]
+
     
     for b in range(1, EVs + 1):
-        B_Cycle = ((1 - 0.8) * Battery_Limitation[b]) / ACC
+        B_Cycle = ((1 - Battery_LimitMax) * Battery_Limitation[b]) / ACC
 
 
     # Declare Decision Variables
@@ -281,17 +283,17 @@ def optimisation(opt_config, cost_config):
     
     # 3.3 When the storage starts (Eq18)
     def Storage_Level_Start(m, b, t):
-        return m.Start_Storage[b] == 0.8 * Battery_Limitation[b]
+        return m.Start_Storage[b] == Battery_LimitMax * Battery_Limitation[b]
     m.Storage_Level_Start = pyo.Constraint(m.b, m.t, rule=Storage_Level_Start)
     
     # 3.4 Maximum storage (Eq17)
     def Max_Storage_Level(m, b, t):
-        return m.Storage_level[b, t] <= 0.8 * Battery_Limitation[b]
+        return m.Storage_level[b, t] <= Battery_LimitMax * Battery_Limitation[b]
     m.Max_SL = pyo.Constraint(m.b, m.t, rule=Max_Storage_Level)
     
     # 3.5 Minimum storage (Eq16)
     def Min_Storage_Level(m, b, t):
-        return m.Storage_level[b, t] >= 0.2 * Battery_Limitation[b]
+        return m.Storage_level[b, t] >= Battery_LimitMin * Battery_Limitation[b]
     m.Min_SL = pyo.Constraint(m.b, m.t, rule=Min_Storage_Level)
     
     # 3.6 Battery cycles counting
@@ -358,9 +360,9 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
     fast_charging_levels = [50, 150, 350]
 
     
-    Ch_losses = 0.964
+    Ch_losses = power_config["Charging_losses"]  # Charging efficiency
     Infrastructure_life = cost_config["Infrastructure_life"]
-    r = 0.05
+    r = cost_config["Discount_rate"]
     Annuity_factor = (r * (1 + r) ** Infrastructure_life) / ((1 + r) ** Infrastructure_life - 1)
 
     Infrastructure_cost = cost_config["Infrastructure_cost"]
@@ -377,10 +379,8 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
 
     Infrastructure_subscription = cost_config["Infrastructure_subscription"]
     Price_FixedrateDT = cost_config["Price_FixedrateDT"]
-    Demand_rate = cost_config["Demand_rate"]
     Price_FixedrateRoute = cost_config["Price_FixedrateRoute"]
-    ACC = 3500
-    B_Calendar = 0.02
+    
 
     """
     Optimized function to save results from the optimisation model
