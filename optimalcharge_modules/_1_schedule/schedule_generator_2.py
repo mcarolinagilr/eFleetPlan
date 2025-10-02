@@ -16,8 +16,10 @@ def generate_schedules(env_config, sch_config):
     n_vehicles = sch_config["Vehicles number"]
     n_typea = sch_config["Type of schedule"]["type a"]
     n_typeb = sch_config["Type of schedule"]["type b"]
+    n_typec = sch_config["Type of schedule"]["type c"]
     n_Renault = sch_config["Type of vehicle"]["Renault"]
-    n_Toyota =sch_config["Type of vehicle"]["Pegeaut"]
+    n_Toyota = sch_config["Type of vehicle"]["Toyota"]
+    n_Custom = sch_config["Type of vehicle"]["Custom"]
     schedule_name =sch_config["Schedule name"]
     company_type = sch_config["Company type"]
                    
@@ -25,12 +27,12 @@ def generate_schedules(env_config, sch_config):
     vehicle_ids = [str(i) for i in range(n_vehicles)]
 
     # Validate input counts
-    assert n_vehicles == n_typea + n_typeb, "Mismatch in total schedule types and vehicle count"
-    assert n_vehicles == n_Renault + n_Toyota, "Mismatch in vehicle types and total vehicle count"
+    assert n_vehicles == n_typea + n_typeb + n_typec, "Mismatch in total schedule types and vehicle count"
+    assert n_vehicles == n_Renault + n_Toyota + n_Custom, "Mismatch in vehicle types and total vehicle count"
 
     # Define schedule and vehicle types
-    schedule_types = [scheduletype.Typea] * n_typea + [scheduletype.Typeb] * n_typeb
-    vehicle_types = [vehicletype.Renault] * n_Renault + [vehicletype.Toyota] * n_Toyota
+    schedule_types = [scheduletype.Typea] * n_typea + [scheduletype.Typeb] * n_typeb + [scheduletype.Typec] * n_typec
+    vehicle_types = [vehicletype.Renault] * n_Renault + [vehicletype.Toyota] * n_Toyota + [vehicletype.Custom] * n_Custom
     company_types = [company_type] * n_vehicles
 
     all_schedules = []

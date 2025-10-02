@@ -504,3 +504,155 @@ class ScheduleGenerator:
                         ev_schedule.loc[ev_schedule["date"] == step, "consumption_factor"] = consumption_factor
 
         return ev_schedule
+    
+    # Generate schedule for Type C
+    
+    def generate_typec(self):
+
+        # make DataFrame and a date range, from start to end
+        ev_schedule = pd.DataFrame({
+            "date": pd.date_range(start=self.starting_date, end=self.ending_date, freq=self.freq),
+            "Distance_km": 0.0,
+            "Consumption_kWh": 0.0,
+            "Consumption_km": 0.0,
+            "Location": "home",
+            "ChargingStation": "home",
+            "ID": str(self.vehicle_id),
+            "PowerRating_kW": self.vc.charging_power,
+            "consumption_factor": np.nan,  # Initialize with NaN or some default value
+        })
+                         
+        ev_schedule["date"] = pd.date_range(start=self.starting_date, end=self.ending_date, freq=self.freq)
+
+        # Loop through each date entry and create the other entries
+        for step in ev_schedule["date"]:
+
+            # Set default consumption_factor in case there's no trip
+            consumption_factor = 1.0  # or any default value you want
+            
+            # if new day, specify new random values
+            if (step.hour == 0) and (step.minute == 0):
+                # weekdays
+                if step.weekday() < 5:
+                    dep_time = np.random.normal(self.sc.dep_mean_wd, self.sc.dep_dev_wd)
+                    dep_hour = int(math.modf(dep_time)[1])
+                    dep_hour = min([dep_hour, self.sc.max_dep])
+                    dep_hour = max([dep_hour, self.sc.min_dep])
+                    minutes = np.asarray([0, 15, 30, 45])
+                    closest_index = np.abs(minutes - int(math.modf(dep_time)[0] * 60)).argmin()
+                    dep_min = minutes[closest_index]
+                    
+                    total_stops = np.random.normal(self.cc.avg_stops, self.cc.dev_stops)
+                    total_time_stops = total_stops * 0.25  
+                                                                                          
+                    ret_time = total_time_stops*0.1 + np.random.normal(self.sc.ret_mean_wd, self.sc.ret_dev_wd)
+                    ret_hour = int(math.modf(ret_time)[1])
+                    ret_hour = min([ret_hour, self.sc.max_return_hour])
+                    ret_hour = max([ret_hour, self.sc.min_return_hour])
+                    minutes = np.asarray([0, 15, 30, 45])
+                    closest_index = np.abs(minutes - int(math.modf(ret_time)[0] * 60)).argmin()
+                    ret_min = minutes[closest_index]                	                               
+                                        
+                    dep_date = dt.datetime(step.year, step.month, step.day, hour=dep_hour, minute=dep_min)
+                    ret_date = dt.datetime(step.year, step.month, step.day, hour=ret_hour, minute=ret_min)
+
+                    trip_steps = (ret_date - dep_date).total_seconds() / 3600
+                    
+                    total_distance = np.random.normal(self.cc.avg_distance_wd, self.cc.dev_distance_wd)
+                    total_distance = max([total_distance, self.cc.min_distance])
+                    total_distance = min([total_distance, self.cc.max_distance])
+                    
+
+
+                    # Calculate distance traveled per hour #NEW
+                    distance_per_hour = total_distance / trip_steps if trip_steps > 0 else 0
+
+                    # Apply min and max constraints #NEW
+                    if distance_per_hour < self.cc.min_distance_per_hour:
+                        distance_per_hour = self.cc.min_distance_per_hour
+                        total_distance = distance_per_hour * trip_steps  # Adjust total distance accordingly
+
+                    if distance_per_hour > self.cc.max_distance_per_hour:
+                        distance_per_hour = self.cc.max_distance_per_hour
+                        total_distance = distance_per_hour * trip_steps  # Adjust total distance accordingly
+                    
+                    if total_distance < 0:
+                        raise ValueError("Distance is negative")
+
+                #weekend
+                else:
+                    dep_time = np.random.normal(self.sc.dep_mean_we, self.sc.dep_dev_we)
+                    dep_hour = int(math.modf(dep_time)[1])
+                    dep_hour = min([dep_hour, self.sc.max_dep])
+                    dep_hour = max([dep_hour, self.sc.min_dep])
+                    minutes = np.asarray([0, 15, 30, 45])
+                    closest_index = np.abs(minutes - int(math.modf(dep_time)[0] * 60)).argmin()
+                    dep_min = minutes[closest_index]
+                    
+                    total_stops = np.random.normal(self.cc.avg_stops, self.cc.dev_stops)
+                    total_time_stops = total_stops * 0.25 
+                                                                                          
+                    ret_time = total_time_stops* 0.1 + np.random.normal(self.sc.ret_mean_we, self.sc.ret_dev_we)
+                    ret_hour = int(math.modf(ret_time)[1])
+                    ret_hour = min([ret_hour, self.sc.max_return_hour])
+                    ret_hour = max([ret_hour, self.sc.min_return_hour])
+                    minutes = np.asarray([0, 15, 30, 45])
+                    closest_index = np.abs(minutes - int(math.modf(ret_time)[0] * 60)).argmin()
+                    ret_min = minutes[closest_index]                	                               
+                                        
+                    dep_date = dt.datetime(step.year, step.month, step.day, hour=dep_hour, minute=dep_min)
+                    ret_date = dt.datetime(step.year, step.month, step.day, hour=ret_hour, minute=ret_min)
+
+                    trip_steps = (ret_date - dep_date).total_seconds() / 3600
+                    
+                    total_distance = np.random.normal(self.cc.avg_distance_we, self.cc.dev_distance_we)
+                    total_distance = max([total_distance, self.cc.min_distance])
+                    total_distance = min([total_distance, self.cc.max_distance])
+                    
+ 
+
+                    # Calculate distance traveled per hour #NEW
+                    distance_per_hour = total_distance / trip_steps if trip_steps > 0 else 0
+
+                    # Apply min and max constraints #NEW
+                    if distance_per_hour < self.cc.min_distance_per_hour:
+                        distance_per_hour = self.cc.min_distance_per_hour
+                        total_distance = distance_per_hour * trip_steps  # Adjust total distance accordingly
+
+                    if distance_per_hour > self.cc.max_distance_per_hour:
+                        distance_per_hour = self.cc.max_distance_per_hour
+                        total_distance = distance_per_hour * trip_steps  # Adjust total distance accordingly
+                    
+                    if total_distance < 0:
+                        raise ValueError("Distance is negative")
+                    
+
+            # if trip is ongoing
+            if (step >= dep_date) and (step < ret_date):
+
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = total_distance / trip_steps
+                cons_rating = max([np.random.normal(self.vc.consumption_mean, self.vc.consumption_std), self.vc.consumption_min])
+                cons_rating = min([cons_rating, self.vc.consumption_max])
+                cons_rating = min([cons_rating, self.vc.total_cons_clip / total_distance])
+
+                consumption_factor = self.consumption_factor(step)
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (distance_per_hour) * cons_rating * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = cons_rating * consumption_factor    
+                ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
+                ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 0
+                ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
+                ev_schedule.loc[ev_schedule["date"] == step, "PowerRating_kW"] = 0.0
+
+            else:
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = 0.0
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = 0.0 
+                ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 1
+                ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 1
+                ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
+                ev_schedule.loc[ev_schedule["date"] == step, "PowerRating_kW"] = self.vc.charging_power
+
+            # Ensure that consumption_factor is assigned even if not driving
+            ev_schedule.loc[ev_schedule["date"] == step, "consumption_factor"] = consumption_factor
+
+        return ev_schedule
