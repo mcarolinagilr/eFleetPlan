@@ -5,14 +5,23 @@ import numpy as np
 import datetime as dt
 import time
 import os
+from pathlib import Path
 
-from optimalcharge_modules._1_schedule.schedule_configure import ScheduleConfig, scheduletype, vehicletype, VehicleConfig, CompanyConfig, companytype
+from .schedule_configure import ScheduleConfig, scheduletype, vehicletype, VehicleConfig, CompanyConfig, companytype
 
+
+class ChargingConstants:
+    Time_slots = [0, 15, 30, 45]
+    Pause_min_duration = 15  # in minutes
+    Stop_time_factor = 0.25  # each stop takes on average Const.Pause_min_duration minutes, so factor is 0.25 hours
+    Stop_impact_on_return = 0.1  # each stop adds on average 6 minutes to return time, so factor is 0.1 hours
+
+Const = ChargingConstants()
 
 class ScheduleGenerator:
     """
     Probabilistic schedule generator. Loops through each 1h timeslot in the yearly dataframe and generates a row
-    entry. The format is kept similar to emobpy to enable compatability and ease of use.
+    entry. 
     """
          
 
@@ -41,7 +50,6 @@ class ScheduleGenerator:
 
         # define schedule type
         self.schedule_type = schedule_type
-        # If sch_config is needed, pass it to ScheduleConfig here
         self.sc = ScheduleConfig(schedule_type=self.schedule_type, env_config=env_config, sch_config=sch_config)
         
         # define vehicle type
@@ -58,16 +66,50 @@ class ScheduleGenerator:
         self.freq = env_config["freq"]
         self.vehicle_id = vehicle_id
         
-        # Load the CSV file
-        # Define the directory where the notebook or script is located
-        # Get the project root directory (two levels up from this file)
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        csv_path = os.path.join(project_root, "data", "Input", "Energy_consumption_factor_2023.csv")
-        if not os.path.exists(csv_path):
-            raise FileNotFoundError(f"CSV file not found: {csv_path}")
-        df_consumption_factors = pd.read_csv(csv_path)
+        # Load the consumption factors CSV that is in env_config
+        self.consumption_factors = self.load_consumption_factors(env_config)
+        
+    def quantize_to_quarter_hour(self, time_decimal: float) -> tuple:
+        """Convert decimal time to (hour, minute) in 15min intervals."""
+        hour = int(math.modf(time_decimal)[1])
+        minute_fraction = int(math.modf(time_decimal)[0] * 60)
+        minutes = np.asarray(Const.Time_slots)
+        closest_index = np.abs(minutes - minute_fraction).argmin()
+        return hour, minutes[closest_index]
+        
+    def Time_constraints(self, mean: float, dev: float, min_time: int, max_time: int) -> tuple:
+        """Generate a time (hour, minute) based on mean and std deviation, clipped to min and max."""
+        time = np.random.normal(mean, dev)
+        hour, minute = self.quantize_to_quarter_hour(time)
+        hour = np.clip(hour, min_time, max_time)
+        return hour, minute
+    
+    
+    
+    def load_consumption_factors(self, env_config: dict) -> pd.DataFrame:
 
-        # Ensure 'date' column is in datetime format
+        csv_path = env_config.get("consumption_factor_file")
+        if not csv_path:
+            raise ValueError(
+                "Please set env_config['consumption_factor_file'] with the path to the CSV file."
+            )
+
+        p = Path(csv_path)
+        if not p.is_absolute():
+            p = (Path.cwd() / p).resolve()
+        if not p.exists():
+            raise FileNotFoundError(f"CSV was not found: {p}")
+
+        try:
+            df_consumption_factors = pd.read_csv(p)
+        except Exception as e:
+            raise RuntimeError(f"Failed to read CSV '{p}': {e}")
+        
+              
+        # Ensure 'date' column exists; if not, use the first column as 'date'
+        if 'date' not in df_consumption_factors.columns:
+            first_col = df_consumption_factors.columns[0]
+            df_consumption_factors.rename(columns={first_col: 'date'}, inplace=True)
         df_consumption_factors['date'] = pd.to_datetime(df_consumption_factors['date'])
 
         # Set 'date' as the index for easier lookups
@@ -103,6 +145,25 @@ class ScheduleGenerator:
         
         return consumption_factors    
       
+    def consumption_rate(self, total_distance:float, max_energy:float) -> float:
+        """
+        Calculate the consumption rate (kWh/km) based on total distance and max energy.
+
+        :param total_distance: Total distance traveled in km
+        :param max_energy: Maximum energy available in kWh
+        :return: Consumption rate in kWh/km
+        """
+        
+        rate= np.random.normal(self.vc.consumption_mean, self.vc.consumption_std)
+        rate = max([rate, self.vc.consumption_min])
+        rate = min([rate, self.vc.consumption_max])
+        
+        if total_distance > 0:
+            return rate = min([rate, max_energy / total_distance])
+        
+        return consumption_rate
+    
+    
     
     def generate_schedule(self):
 
@@ -112,13 +173,13 @@ class ScheduleGenerator:
         :return: pd.DataFrame of the schedule
         """
 
-        if self.schedule_type == scheduletype.Typea:
-            return self.generate_typea()        
-        elif self.schedule_type == scheduletype.Typeb:
-            return self.generate_typeb() 
-        elif self.schedule_type == scheduletype.Typec:
+        if self.schedule_type == self.schedule_type.Typea:
+            return self.generate_typea()
+        if self.schedule_type == self.schedule_type.Typec:
             return self.generate_typec()
-        
+        elif self.schedule_type == self.schedule_type.Typeb:
+            return self.generate_typeb() 
+      
         else:
             raise TypeError("Company type not found!")
 
@@ -149,29 +210,28 @@ class ScheduleGenerator:
             if (step.hour == 0) and (step.minute == 0):
                 # weekdays
                 if step.weekday() < 5:
-                    dep_time = np.random.normal(self.sc.dep_mean_wd, self.sc.dep_dev_wd)
-                    dep_hour = int(math.modf(dep_time)[1])
-                    dep_hour = min([dep_hour, self.sc.max_dep])
-                    dep_hour = max([dep_hour, self.sc.min_dep])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(dep_time)[0] * 60)).argmin()
-                    dep_min = minutes[closest_index]
+                    dep_hour, dep_min = self.Time_constraints(
+                        self.sc.dep_mean_wd,
+                        self.sc.dep_dev_wd,
+                        self.sc.min_dep,
+                        self.sc.max_dep
+                    )
                     
                     total_stops = np.random.normal(self.cc.avg_stops, self.cc.dev_stops)
-                    total_time_stops = total_stops * 0.25  
-                                                                                          
-                    ret_time = total_time_stops*0.1 + np.random.normal(self.sc.ret_mean_wd, self.sc.ret_dev_wd)
-                    ret_hour = int(math.modf(ret_time)[1])
-                    ret_hour = min([ret_hour, self.sc.max_return_hour])
-                    ret_hour = max([ret_hour, self.sc.min_return_hour])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(ret_time)[0] * 60)).argmin()
-                    ret_min = minutes[closest_index]                	                               
-                                        
+                    total_time_stops = total_stops * Const.Stop_time_factor
+
+                    adjusted_ret_mean = self.sc.ret_mean_we + (total_time_stops * Const.Stop_impact_on_return)
+                    ret_hour, ret_min = self.Time_constraints(
+                        adjusted_ret_mean,
+                        self.sc.ret_dev_we,
+                        self.sc.min_return_hour,
+                        self.sc.max_return_hour
+                    )
+
                     dep_date = dt.datetime(step.year, step.month, step.day, hour=dep_hour, minute=dep_min)
                     ret_date = dt.datetime(step.year, step.month, step.day, hour=ret_hour, minute=ret_min)
 
-                    trip_steps = (ret_date - dep_date).total_seconds() / 3600
+                    trip_hours = (ret_date - dep_date).total_seconds() / 3600
                     
                     total_distance = np.random.normal(self.cc.avg_distance_wd, self.cc.dev_distance_wd)
                     total_distance = max([total_distance, self.cc.min_distance])
@@ -180,45 +240,44 @@ class ScheduleGenerator:
 
 
                     # Calculate distance traveled per hour #NEW
-                    distance_per_hour = total_distance / trip_steps if trip_steps > 0 else 0
+                    distance_per_hour = total_distance / trip_hours if trip_hours > 0 else 0
 
                     # Apply min and max constraints #NEW
                     if distance_per_hour < self.cc.min_distance_per_hour:
                         distance_per_hour = self.cc.min_distance_per_hour
-                        total_distance = distance_per_hour * trip_steps  # Adjust total distance accordingly
+                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
 
                     if distance_per_hour > self.cc.max_distance_per_hour:
                         distance_per_hour = self.cc.max_distance_per_hour
-                        total_distance = distance_per_hour * trip_steps  # Adjust total distance accordingly
+                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
                     
                     if total_distance < 0:
                         raise ValueError("Distance is negative")
 
                 #weekend
                 else:
-                    dep_time = np.random.normal(self.sc.dep_mean_we, self.sc.dep_dev_we)
-                    dep_hour = int(math.modf(dep_time)[1])
-                    dep_hour = min([dep_hour, self.sc.max_dep])
-                    dep_hour = max([dep_hour, self.sc.min_dep])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(dep_time)[0] * 60)).argmin()
-                    dep_min = minutes[closest_index]
+                    dep_hour, dep_min = self.Time_constraints(
+                        self.sc.dep_mean_wd,
+                        self.sc.dep_dev_wd,
+                        self.sc.min_dep,
+                        self.sc.max_dep
+                    )
                     
                     total_stops = np.random.normal(self.cc.avg_stops, self.cc.dev_stops)
-                    total_time_stops = total_stops * 0.25 
+                    total_time_stops = total_stops * Const.Stop_time_factor 
                                                                                           
-                    ret_time = total_time_stops* 0.1 + np.random.normal(self.sc.ret_mean_we, self.sc.ret_dev_we)
-                    ret_hour = int(math.modf(ret_time)[1])
-                    ret_hour = min([ret_hour, self.sc.max_return_hour])
-                    ret_hour = max([ret_hour, self.sc.min_return_hour])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(ret_time)[0] * 60)).argmin()
-                    ret_min = minutes[closest_index]                	                               
+                    adjusted_ret_mean = self.sc.ret_mean_we + (total_time_stops * Const.Stop_impact_on_return)
+                    ret_hour, ret_min = self.Time_constraints(
+                        adjusted_ret_mean,
+                        self.sc.ret_dev_we,
+                        self.sc.min_return_hour,
+                        self.sc.max_return_hour
+                    )             	                               
                                         
                     dep_date = dt.datetime(step.year, step.month, step.day, hour=dep_hour, minute=dep_min)
                     ret_date = dt.datetime(step.year, step.month, step.day, hour=ret_hour, minute=ret_min)
 
-                    trip_steps = (ret_date - dep_date).total_seconds() / 3600
+                    trip_hours = (ret_date - dep_date).total_seconds() / 3600
                     
                     total_distance = np.random.normal(self.cc.avg_distance_we, self.cc.dev_distance_we)
                     total_distance = max([total_distance, self.cc.min_distance])
@@ -227,16 +286,16 @@ class ScheduleGenerator:
  
 
                     # Calculate distance traveled per hour #NEW
-                    distance_per_hour = total_distance / trip_steps if trip_steps > 0 else 0
+                    distance_per_hour = total_distance / trip_hours if trip_hours > 0 else 0
 
                     # Apply min and max constraints #NEW
                     if distance_per_hour < self.cc.min_distance_per_hour:
                         distance_per_hour = self.cc.min_distance_per_hour
-                        total_distance = distance_per_hour * trip_steps  # Adjust total distance accordingly
+                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
 
                     if distance_per_hour > self.cc.max_distance_per_hour:
                         distance_per_hour = self.cc.max_distance_per_hour
-                        total_distance = distance_per_hour * trip_steps  # Adjust total distance accordingly
+                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
                     
                     if total_distance < 0:
                         raise ValueError("Distance is negative")
@@ -245,14 +304,13 @@ class ScheduleGenerator:
             # if trip is ongoing
             if (step >= dep_date) and (step < ret_date):
 
-                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = total_distance / trip_steps
-                cons_rating = max([np.random.normal(self.vc.consumption_mean, self.vc.consumption_std), self.vc.consumption_min])
-                cons_rating = min([cons_rating, self.vc.consumption_max])
-                cons_rating = min([cons_rating, self.vc.total_cons_clip / total_distance])
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = total_distance / trip_hours
+                consumption_rate = self.consumption_rate(total_distance, self.vc.total_cons_clip)
+
 
                 consumption_factor = self.consumption_factor(step)
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (distance_per_hour) * cons_rating * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = cons_rating * consumption_factor    
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (distance_per_hour) * consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = consumption_rate * consumption_factor    
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
                 ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 0
                 ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
@@ -305,36 +363,36 @@ class ScheduleGenerator:
                 if step.weekday() < 5:
 
                     # time mean and std dev in config
-                    dep_time = np.random.normal(self.sc.dep_mean_wd, self.sc.dep_dev_wd)
-                    dep_hour = int(math.modf(dep_time)[1])
-                    dep_hour = min([dep_hour, self.sc.max_dep])
-                    dep_hour = max([dep_hour, self.sc.min_dep])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(dep_time)[0]*60)).argmin()
-                    dep_min = minutes[closest_index]
+                    dep_hour, dep_min = self.Time_constraints(
+                        self.sc.dep_mean_wd,
+                        self.sc.dep_dev_wd,
+                        self.sc.min_dep,
+                        self.sc.max_dep
+                    )
                                                            
                     #total_stops = np.random.normal(self.cc.avg_stops, self.cc.dev_stops)
-                    #total_time_stops = total_stops * 0.25                      
+                    #total_time_stops = total_stops * Const.Stop_time_factor                      
 
-                    pause_beg_time = np.random.normal(self.sc.pause_beg_mean_wd, self.sc.pause_beg_dev_wd)
-                    pause_beg_hour = int(math.modf(pause_beg_time)[1]) 
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(pause_beg_time)[0] * 60)).argmin()
-                    pause_beg_min = minutes[closest_index]
+                    pause_beg_hour, pause_beg_min = self.Time_constraints(
+                        self.sc.pause_beg_mean_wd,
+                        self.sc.pause_beg_dev_wd,
+                        self.sc.min_return_hour,  # Or use proper pause min/max if you have them
+                        self.sc.max_return_hour
+                    )
+                                        
+                    pause_end_hour, pause_end_min = self.Time_constraints(
+                        self.sc.pause_end_mean,
+                        self.sc.pause_end_dev,
+                        self.sc.min_return_hour,  # Or use proper pause min/max if you have them
+                        self.sc.max_return_hour
+                    )
 
-                    pause_end_time =  np.random.normal(self.sc.pause_end_mean, self.sc.pause_end_dev)
-                    pause_end_hour = int(math.modf(pause_end_time)[1])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(pause_end_time)[0] * 60)).argmin()
-                    pause_end_min = minutes[closest_index]
-
-                    ret_time = np.random.normal(self.sc.ret_mean_wd, self.sc.ret_dev_wd)
-                    ret_hour = int(math.modf(ret_time)[1])
-                    ret_hour = min([ret_hour, self.sc.max_return_hour])
-                    ret_hour = max([ret_hour, self.sc.min_return_hour])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(ret_time)[0] * 60)).argmin()
-                    ret_min = minutes[closest_index]
+                    ret_hour, ret_min = self.Time_constraints(
+                        self.sc.ret_mean_wd,
+                        self.sc.ret_dev_wd,
+                        self.sc.min_return_hour,
+                        self.sc.max_return_hour
+                    )
 
                     # make dates for easier comparison
                     dep_date = dt.datetime(step.year, step.month, step.day, hour=dep_hour, minute=dep_min)
@@ -343,12 +401,12 @@ class ScheduleGenerator:
                     if (pause_end_date - pause_beg_date).total_seconds() < 0:
                         diff = (pause_end_date - pause_beg_date).total_seconds()
                         pause_end_date += dt.timedelta(seconds=abs(diff))
-                        pause_end_date += dt.timedelta(minutes=15)
+                        pause_end_date += dt.timedelta(minutes=Const.Pause_min_duration)
                     ret_date = dt.datetime(step.year, step.month, step.day, hour=ret_hour, minute=ret_min)
                     
                     # amount of time steps per trip
-                    first_trip_steps = (pause_beg_date - dep_date).total_seconds() / 3600
-                    second_trip_steps = (ret_date - pause_end_date).total_seconds() / 3600
+                    first_trip_hours = (pause_beg_date - dep_date).total_seconds() / 3600
+                    second_trip_hours = (ret_date - pause_end_date).total_seconds() / 3600
                     
                     total_distance = np.random.normal(self.cc.avg_distance_wd, self.cc.dev_distance_wd)/2
                     total_distance = max([total_distance, self.cc.min_distance])
@@ -359,36 +417,36 @@ class ScheduleGenerator:
                 # weekend
                 else:
                     # time mean and std dev in config
-                    dep_time = np.random.normal(self.sc.dep_mean_we, self.sc.dep_dev_we)
-                    dep_hour = int(math.modf(dep_time)[1])
-                    dep_hour = min([dep_hour, self.sc.max_dep])
-                    dep_hour = max([dep_hour, self.sc.min_dep])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(dep_time)[0]*60)).argmin()
-                    dep_min = minutes[closest_index]
+                    dep_hour, dep_min = self.Time_constraints(
+                        self.sc.dep_mean_wd,
+                        self.sc.dep_dev_wd,
+                        self.sc.min_dep,
+                        self.sc.max_dep
+                    )
                                                            
                     #total_stops = np.random.normal(self.cc.avg_stops, self.cc.dev_stops)
-                    #total_time_stops = total_stops * 0.25                      
+                    #total_time_stops = total_stops * Const.Stop_time_factor                      
 
-                    pause_beg_time = np.random.normal(self.sc.pause_beg_mean_we, self.sc.pause_beg_dev_we)
-                    pause_beg_hour = int(math.modf(pause_beg_time)[1]) 
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(pause_beg_time)[0] * 60)).argmin()
-                    pause_beg_min = minutes[closest_index]
+                    pause_beg_hour, pause_beg_min = self.Time_constraints(
+                        self.sc.pause_beg_mean_wd,
+                        self.sc.pause_beg_dev_wd,
+                        self.sc.min_return_hour,  # Or use proper pause min/max if you have them
+                        self.sc.max_return_hour
+                    )
+                                        
+                    pause_end_hour, pause_end_min = self.Time_constraints(
+                        self.sc.pause_end_mean,
+                        self.sc.pause_end_dev,
+                        self.sc.min_return_hour,  # Or use proper pause min/max if you have them
+                        self.sc.max_return_hour
+                    )
 
-                    pause_end_time =  np.random.normal(self.sc.pause_end_mean, self.sc.pause_end_dev)
-                    pause_end_hour = int(math.modf(pause_end_time)[1])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(pause_end_time)[0] * 60)).argmin()
-                    pause_end_min = minutes[closest_index]
-
-                    ret_time = np.random.normal(self.sc.ret_mean_we, self.sc.ret_dev_we)
-                    ret_hour = int(math.modf(ret_time)[1])
-                    ret_hour = min([ret_hour, self.sc.max_return_hour])
-                    ret_hour = max([ret_hour, self.sc.min_return_hour])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(ret_time)[0] * 60)).argmin()
-                    ret_min = minutes[closest_index]
+                    ret_hour, ret_min = self.Time_constraints(
+                        self.sc.ret_mean_wd,
+                        self.sc.ret_dev_wd,
+                        self.sc.min_return_hour,
+                        self.sc.max_return_hour
+                    )
 
                     # make dates for easier comparison
                     dep_date = dt.datetime(step.year, step.month, step.day, hour=dep_hour, minute=dep_min)
@@ -397,12 +455,12 @@ class ScheduleGenerator:
                     if (pause_end_date - pause_beg_date).total_seconds() < 0:
                         diff = (pause_end_date - pause_beg_date).total_seconds()
                         pause_end_date += dt.timedelta(seconds=abs(diff))
-                        pause_end_date += dt.timedelta(minutes=15)
+                        pause_end_date += dt.timedelta(minutes=Const.Pause_min_duration)
                     ret_date = dt.datetime(step.year, step.month, step.day, hour=ret_hour, minute=ret_min)
                     
                     # amount of time steps per trip
-                    first_trip_steps = (pause_beg_date - dep_date).total_seconds() / 3600
-                    second_trip_steps = (ret_date - pause_end_date).total_seconds() / 3600
+                    first_trip_hours = (pause_beg_date - dep_date).total_seconds() / 3600
+                    second_trip_hours = (ret_date - pause_end_date).total_seconds() / 3600
                     
                     total_distance = np.random.normal(self.cc.avg_distance_we, self.cc.dev_distance_we)/2
                     total_distance = max([total_distance, self.cc.min_distance])
@@ -413,20 +471,12 @@ class ScheduleGenerator:
             if (step >= dep_date) and (step < pause_beg_date):
 
                 # dividing the total distance into equal parts
-                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = total_distance / first_trip_steps
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = total_distance / first_trip_hours
 
-                # sampling consumption in kWh / km based on Emobpy German case statistics
-                # Clipping to min
-                cons_rating = max([np.random.normal(self.vc.consumption_mean, self.vc.consumption_std),
-                                   self.vc.consumption_min])
-                # Clipping to max
-                cons_rating = min([cons_rating, self.vc.consumption_max])
-                # Clipping such that the maximum amount of energy per trip is not exceeded
-                cons_rating = min([cons_rating, self.vc.total_cons_clip / total_distance])
-                consumption_factor = self.consumption_factor (step)
-                               
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (total_distance / first_trip_steps) * cons_rating * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = cons_rating * consumption_factor 
+                consumption_rate = self._sample_consumption_rate(total_distance, self.vc.total_cons_clip)
+
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (total_distance / first_trip_hours) * consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = consumption_rate * consumption_factor
 
                 # set relevant entries
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
@@ -437,20 +487,12 @@ class ScheduleGenerator:
 
             elif (step >= pause_end_date) and (step < ret_date):
                 # dividing the total distance into equal parts
-                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = total_distance / second_trip_steps
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = total_distance / second_trip_hours
 
-                # sampling consumption in kWh / km based on Emobpy German case statistics
-                # Clipping to min
-                cons_rating = max([np.random.normal(self.vc.consumption_mean, self.vc.consumption_std),
-                                   self.vc.consumption_min])
-                # Clipping to max
-                cons_rating = min([cons_rating, self.vc.consumption_max])
-                # Clipping such that the maximum amount of energy per trip is not exceeded
-                cons_rating = min([cons_rating, self.vc.total_cons_clip_afternoon / total_distance])
-                consumption_factor = self.consumption_factor (step)
-                
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (total_distance / second_trip_steps) * cons_rating * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = cons_rating * consumption_factor 
+                consumption_rate = self._sample_consumption_rate(total_distance, self.vc.total_cons_clip)
+
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (total_distance / second_trip_hours) * consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = consumption_rate * consumption_factor
 
                 # set relevant entries
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
@@ -477,27 +519,21 @@ class ScheduleGenerator:
                     em_start_date = dt.datetime(step.year, step.month, step.day, hour=2, minute=0)
                     em_end_date = dt.datetime(step.year, step.month, step.day, hour=4, minute=0)
                     dr = pd.date_range(start=em_start_date, end=em_end_date, freq="15T")
-                    trip_steps = (em_end_date - em_start_date).total_seconds() / 3600
+                    trip_hours = (em_end_date - em_start_date).total_seconds() / 3600
                     total_distance = np.random.normal(self.sc.avg_distance_em, self.sc.dev_distance_em)/2
                     total_distance = max([total_distance, self.sc.min_em_distance])
 
                     for step in dr:
                         # dividing the total distance into equal parts
-                        ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = total_distance / trip_steps
+                        ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = total_distance / trip_hours
 
                         # sampling consumption in kWh / km based on Emobpy German case statistics
                         # Clipping to min
-                        cons_rating = max([np.random.normal(self.vc.consumption_mean, self.vc.consumption_std),
-                                           self.vc.consumption_min])
-                        # Clipping to max
-                        cons_rating = min([cons_rating, self.vc.consumption_max])
-                        # Clipping such that the maximum amount of energy per trip is not exceeded
-                        cons_rating = min([cons_rating, self.vc.total_cons_clip / total_distance])
-                        consumption_factor = self.consumption_factor (step)
-                        
-                        ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (total_distance / trip_steps) * cons_rating * consumption_factor
-                        ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = cons_rating * consumption_factor 
-                        
+                        consumption_rate = self._sample_consumption_rate(total_distance, self.vc.total_cons_clip)
+
+                        ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (total_distance / trip_hours) * consumption_rate * consumption_factor
+                        ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = consumption_rate * consumption_factor
+
                         # set relevant entries
                         ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
                         ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 0
@@ -506,9 +542,7 @@ class ScheduleGenerator:
                         ev_schedule.loc[ev_schedule["date"] == step, "consumption_factor"] = consumption_factor
 
         return ev_schedule
-    
-    # Generate schedule for Type C
-    
+
     def generate_typec(self):
 
         # make DataFrame and a date range, from start to end
@@ -536,29 +570,28 @@ class ScheduleGenerator:
             if (step.hour == 0) and (step.minute == 0):
                 # weekdays
                 if step.weekday() < 5:
-                    dep_time = np.random.normal(self.sc.dep_mean_wd, self.sc.dep_dev_wd)
-                    dep_hour = int(math.modf(dep_time)[1])
-                    dep_hour = min([dep_hour, self.sc.max_dep])
-                    dep_hour = max([dep_hour, self.sc.min_dep])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(dep_time)[0] * 60)).argmin()
-                    dep_min = minutes[closest_index]
+                    dep_hour, dep_min = self.Time_constraints(
+                        self.sc.dep_mean_wd,
+                        self.sc.dep_dev_wd,
+                        self.sc.min_dep,
+                        self.sc.max_dep
+                    )
                     
                     total_stops = np.random.normal(self.cc.avg_stops, self.cc.dev_stops)
-                    total_time_stops = total_stops * 0.25  
+                    total_time_stops = total_stops * Const.Stop_time_factor  
                                                                                           
-                    ret_time = total_time_stops*0.1 + np.random.normal(self.sc.ret_mean_wd, self.sc.ret_dev_wd)
-                    ret_hour = int(math.modf(ret_time)[1])
-                    ret_hour = min([ret_hour, self.sc.max_return_hour])
-                    ret_hour = max([ret_hour, self.sc.min_return_hour])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(ret_time)[0] * 60)).argmin()
-                    ret_min = minutes[closest_index]                	                               
+                    adjusted_ret_mean = self.sc.ret_mean_we + (total_time_stops * Const.Stop_impact_on_return)
+                    ret_hour, ret_min = self.Time_constraints(
+                        adjusted_ret_mean,
+                        self.sc.ret_dev_we,
+                        self.sc.min_return_hour,
+                        self.sc.max_return_hour
+                    )              	                               
                                         
                     dep_date = dt.datetime(step.year, step.month, step.day, hour=dep_hour, minute=dep_min)
                     ret_date = dt.datetime(step.year, step.month, step.day, hour=ret_hour, minute=ret_min)
 
-                    trip_steps = (ret_date - dep_date).total_seconds() / 3600
+                    trip_hours = (ret_date - dep_date).total_seconds() / 3600
                     
                     total_distance = np.random.normal(self.cc.avg_distance_wd, self.cc.dev_distance_wd)
                     total_distance = max([total_distance, self.cc.min_distance])
@@ -567,45 +600,44 @@ class ScheduleGenerator:
 
 
                     # Calculate distance traveled per hour #NEW
-                    distance_per_hour = total_distance / trip_steps if trip_steps > 0 else 0
+                    distance_per_hour = total_distance / trip_hours if trip_hours > 0 else 0
 
                     # Apply min and max constraints #NEW
                     if distance_per_hour < self.cc.min_distance_per_hour:
                         distance_per_hour = self.cc.min_distance_per_hour
-                        total_distance = distance_per_hour * trip_steps  # Adjust total distance accordingly
+                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
 
                     if distance_per_hour > self.cc.max_distance_per_hour:
                         distance_per_hour = self.cc.max_distance_per_hour
-                        total_distance = distance_per_hour * trip_steps  # Adjust total distance accordingly
+                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
                     
                     if total_distance < 0:
                         raise ValueError("Distance is negative")
 
                 #weekend
                 else:
-                    dep_time = np.random.normal(self.sc.dep_mean_we, self.sc.dep_dev_we)
-                    dep_hour = int(math.modf(dep_time)[1])
-                    dep_hour = min([dep_hour, self.sc.max_dep])
-                    dep_hour = max([dep_hour, self.sc.min_dep])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(dep_time)[0] * 60)).argmin()
-                    dep_min = minutes[closest_index]
+                    dep_hour, dep_min = self.Time_constraints(
+                        self.sc.dep_mean_wd,
+                        self.sc.dep_dev_wd,
+                        self.sc.min_dep,
+                        self.sc.max_dep
+                    )
                     
                     total_stops = np.random.normal(self.cc.avg_stops, self.cc.dev_stops)
-                    total_time_stops = total_stops * 0.25 
+                    total_time_stops = total_stops * Const.Stop_time_factor 
                                                                                           
-                    ret_time = total_time_stops* 0.1 + np.random.normal(self.sc.ret_mean_we, self.sc.ret_dev_we)
-                    ret_hour = int(math.modf(ret_time)[1])
-                    ret_hour = min([ret_hour, self.sc.max_return_hour])
-                    ret_hour = max([ret_hour, self.sc.min_return_hour])
-                    minutes = np.asarray([0, 15, 30, 45])
-                    closest_index = np.abs(minutes - int(math.modf(ret_time)[0] * 60)).argmin()
-                    ret_min = minutes[closest_index]                	                               
+                    adjusted_ret_mean = self.sc.ret_mean_we + (total_time_stops * Const.Stop_impact_on_return)
+                    ret_hour, ret_min = self.Time_constraints(
+                        adjusted_ret_mean,
+                        self.sc.ret_dev_we,
+                        self.sc.min_return_hour,
+                        self.sc.max_return_hour
+                    )                 	                               
                                         
                     dep_date = dt.datetime(step.year, step.month, step.day, hour=dep_hour, minute=dep_min)
                     ret_date = dt.datetime(step.year, step.month, step.day, hour=ret_hour, minute=ret_min)
 
-                    trip_steps = (ret_date - dep_date).total_seconds() / 3600
+                    trip_hours = (ret_date - dep_date).total_seconds() / 3600
                     
                     total_distance = np.random.normal(self.cc.avg_distance_we, self.cc.dev_distance_we)
                     total_distance = max([total_distance, self.cc.min_distance])
@@ -614,16 +646,16 @@ class ScheduleGenerator:
  
 
                     # Calculate distance traveled per hour #NEW
-                    distance_per_hour = total_distance / trip_steps if trip_steps > 0 else 0
+                    distance_per_hour = total_distance / trip_hours if trip_hours > 0 else 0
 
                     # Apply min and max constraints #NEW
                     if distance_per_hour < self.cc.min_distance_per_hour:
                         distance_per_hour = self.cc.min_distance_per_hour
-                        total_distance = distance_per_hour * trip_steps  # Adjust total distance accordingly
+                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
 
                     if distance_per_hour > self.cc.max_distance_per_hour:
                         distance_per_hour = self.cc.max_distance_per_hour
-                        total_distance = distance_per_hour * trip_steps  # Adjust total distance accordingly
+                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
                     
                     if total_distance < 0:
                         raise ValueError("Distance is negative")
@@ -632,14 +664,13 @@ class ScheduleGenerator:
             # if trip is ongoing
             if (step >= dep_date) and (step < ret_date):
 
-                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = total_distance / trip_steps
-                cons_rating = max([np.random.normal(self.vc.consumption_mean, self.vc.consumption_std), self.vc.consumption_min])
-                cons_rating = min([cons_rating, self.vc.consumption_max])
-                cons_rating = min([cons_rating, self.vc.total_cons_clip / total_distance])
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = total_distance / trip_hours
+                consumption_rate = self._sample_consumption_rate(total_distance, self.vc.total_cons_clip)
+
 
                 consumption_factor = self.consumption_factor(step)
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (distance_per_hour) * cons_rating * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = cons_rating * consumption_factor    
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (distance_per_hour) * consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = consumption_rate * consumption_factor
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
                 ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 0
                 ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
