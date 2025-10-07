@@ -303,13 +303,33 @@ def optimisation(opt_config, cost_config, power_config):
         else:
             return m.Battery_Cycles[b, t] == (Ch_losses * m.Charge_hourly[b, t]) / Battery_Limitation[b]
     m.Battery_Cycles_Hourly = pyo.Constraint(m.b, m.t, rule=Battery_Cycles)
+    
+    # 3.7. Only disconnect to the charger when SOC is above a certain level
+    
+    # New binary variable: 1 if vehicle disconnects at timestep t
+    m.Disconnection = pyo.Var(m.b, m.t, domain=pyo.Binary)
 
-    #3.7 Limiting minimum charge energy when charging with route charger (EqXX)
-    #def Min_Charge_Route_If_Used(m, b, t):
-        #return m.Charge_hourly_Route[b, t] >= Min_Charge_Energy * m.Charging_Route[b, t]
-    #m.min_energy_if_charging_route = pyo.Constraint(m.b, m.t, rule=Min_Charge_Route_If_Used)
+    # Detect disconnection (charging at t-1, not charging at t)
+    def Detect_Disconnection(m, b, t):
+        if t > 1:
+            was_charging = m.Charging_slow[b, t-1] + sum(m.Charging_fast[b, t-1, f] for f in m.f) #identify if was charging at t-1
+            is_charging = m.Charging_slow[b, t] + sum(m.Charging_fast[b, t, f] for f in m.f) #identify if is charging at t
+            
+            # Disconnect = 1 only if was_charging=1 AND is_charging=0
+            return m.Disconnection[b, t] >= was_charging - is_charging
+        return pyo.Constraint.Skip
 
+    m.detect_disconnection = pyo.Constraint(m.b, m.t, rule=Detect_Disconnection)
 
+    # Require minimum SOC when disconnecting
+    def Min_SOC_On_Disconnection(m, b, t):
+        if t > 1:
+            return m.Storage_level[b, t-1] >= (
+                Battery_LimitMax * Battery_Limitation[b] * m.Disconnection[b, t]  # Ensure that SOC is equal to Battery maximum limit if disconnected
+            )
+        return pyo.Constraint.Skip
+
+    m.min_soc_disconnection = pyo.Constraint(m.b, m.t, rule=Min_SOC_On_Disconnection)
 
     # Objective Function
     def ObjectiveFunction(m):
@@ -320,8 +340,9 @@ def optimisation(opt_config, cost_config, power_config):
             + sum(m.Charge_hourly_slow[b, t] / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)  # Electricity cost on slow charging
             + sum(m.Charge_hourly_fast[b, t, f] / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t for f in m.f)  # Electricity cost on fast charging
             + m.Max_Power * Demand_rate
-            + sum(m.Charge_hourly_Route[b, t] / Ch_losses * Price_FixedrateRoute for b in m.b for t in m.t) + sum(m.Charging_Route[b, t] * 9999 for b in m.b for t in m.t)
-    )
+            + sum(m.Charge_hourly_Route[b, t] / Ch_losses * Price_FixedrateRoute for b in m.b for t in m.t)
+            + sum(m.Charging_Route[b, t] * 9999 for b in m.b for t in m.t)
+        )
     m.objective = pyo.Objective(rule=ObjectiveFunction, sense=pyo.minimize)
 
     # Solver definition
@@ -353,7 +374,7 @@ def optimisation(opt_config, cost_config, power_config):
 
 #SCRIPT TO SAVE RESULTS
 
-def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_file_pathB, csv_file_pathC, csv_file_pathD, cost_config):
+def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_file_pathB, csv_file_pathC, csv_file_pathD, cost_config, power_config):
     
     # Parameters
     

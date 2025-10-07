@@ -80,7 +80,7 @@ def plot_summary_table(file_path):
     table.set_fontsize(11)
     table.scale(1, 1.5)
 
-    plt.title('Infrastructure and Electricity Cost Summary (in kr)', fontsize=14, pad=20)
+    plt.title('Infrastructure and Electricity Cost Summary (in SEK)', fontsize=14, pad=20)
     plt.tight_layout()
     plt.show()
     
@@ -274,7 +274,7 @@ def graph_chargingpower (file_path, folder_path):
     ax2 = ax1.twinx()
     ax2.plot(average_price_per_hour, color='black', linewidth=2, alpha=0.6, label='Average Price per Hour', 
                             solid_joinstyle='round', solid_capstyle='round')
-    ax2.set_ylabel('Average Price (Kr)', fontsize=20, color='black')
+    ax2.set_ylabel('Average Price (SEK)', fontsize=20, color='black')
     ax2.tick_params(axis='y', labelcolor='black', labelsize=14)
     #ax1.set_ylim(0,300)
     #ax2.set_ylim(0, 140)
@@ -335,7 +335,7 @@ def graph_powerbytype (file_path, folder_path):
     ax2 = ax1.twinx()
     ax2.plot(average_price_per_hour, color='black', linewidth=2, alpha=0.6, label='Average Price per Hour', 
                             solid_joinstyle='round', solid_capstyle='round')
-    ax2.set_ylabel('Average Price (Kr)', fontsize=20, color='black')
+    ax2.set_ylabel('Average Price (SEK)', fontsize=20, color='black')
     ax2.tick_params(axis='y', labelcolor='black', labelsize=14)
     #ax1.set_ylim(0,300)
     #ax2.set_ylim(0, 140)
