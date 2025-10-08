@@ -1,8 +1,0 @@
-pyproject.toml
-setup.cfg
-setup.py
-optimalcharge.egg-info/PKG-INFO
-optimalcharge.egg-info/SOURCES.txt
-optimalcharge.egg-info/dependency_links.txt
-optimalcharge.egg-info/requires.txt
-optimalcharge.egg-info/top_level.txt
