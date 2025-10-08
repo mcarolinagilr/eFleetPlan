@@ -4,8 +4,8 @@
 |--------------------|-----------------------------------------------------------------------------|
 | Name               | eFleetPlan                                                                  |
 | Version            | V1.0                                                                        |
-| License            | MIT                                                                         |
-| DOI                | 10.5281/zenodo.16448878                                                     |
+| License            |                                                             |
+| DOI                | XXXXX                                      |
 | Description        | Python-based optimisation tool designed fo optimisation of charging infrastructure investment and operation for electric light commercial vehicles (LCV)                               |
 | Author(s)          | Carolina Gil Ribeiro and Jagruti Thakur                                     |
 | Contact            | carolina.ribeiro@energy.kth.se                                              |

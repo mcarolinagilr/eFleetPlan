@@ -674,7 +674,7 @@ class ScheduleGenerator:
     
     
 
-def generate_schedules(env_config, sch_config):
+def generate_fleet_schedules(env_config, sch_config):
                        
     n_vehicles = sch_config["Vehicles number"]
     n_typea = sch_config["Type of schedule"]["type a"]
