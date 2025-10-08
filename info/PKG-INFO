@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: optimalcharge
+Version: 0.1
+Summary: Optimisation of infrastrucuture and operation of electric light commercial vehicles
+Author: Carolina Gil Ribeiro
+Requires-Python: >=3.8
+Requires-Dist: pyomo
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: xlsxWriter
+Requires-Dist: matplotlib
