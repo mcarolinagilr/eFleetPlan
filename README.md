@@ -51,6 +51,11 @@ After activating the environment, run:
     pip install -r requirements.txt
     pip install .
 
+## Gurobi solver instalation
+eFleetPlan requires the [Gurobi Optimizer](https://www.gurobi.com/) to solve mathematical optimization problems.
+To use the optimisation feature, you need a valid Gurobi license and installation.
+
+
 
 ## How to use the tool
 To use the full tool, run the Optimal Charging Tool notebook: 

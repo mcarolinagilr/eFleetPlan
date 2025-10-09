@@ -347,12 +347,36 @@ def optimisation(opt_config, cost_config, power_config):
 
     # Solver definition
     
+   # Solver definition - DETERMINISTIC VERSION
     solver = pyo.SolverFactory('gurobi')
+
+    # Compromise: Semi-deterministic but faster
     solver.options['MIPGap'] = 0.25
-    #solver.options['BarOrder'] = 1 # Set BarOrder to 1 (for minimum degree ordering, for example)
     solver.options['ScaleFlag'] = 2
-    solver.options['LogFile'] = "gurobi_log_3.txt"  # Ative logs para depuração
-    solver.options['Method'] = -1
+    solver.options['LogFile'] = "gurobi_log.txt"
+
+    # Speed vs determinism balance
+    solver.options['Threads'] = 4                 # Half threads (50% speed boost)
+    solver.options['Seed'] = 42                   # Fixed seed for some reproducibility
+    solver.options['Method'] = 2                  # Deterministic barrier method
+    solver.options['Presolve'] = 1                # Keep presolve for speed
+    solver.options['NodeMethod'] = 2              # Deterministic node method
+
+    # Conservative optimizations
+    solver.options['Cuts'] = 1                    # Conservative cuts (not 0)
+    solver.options['Heuristics'] = 0.1            # Limited heuristics (not 0.0)
+
+    # Safety limits
+    solver.options['TimeLimit'] = 3600            # 1 hour limit per job
+    solver.options['MIPFocus'] = 1                # Focus on finding good solutions fast
+
+    # Debug: Print all solver options being used
+    print("=== SOLVER CONFIGURATION ===")
+    for key, value in solver.options.items():
+        print(f"  {key}: {value}")
+    print("=" * 40)
+
+    
     result = solver.solve(m, report_timing=True, tee=True, warmstart=False)
 
     # Validate Results

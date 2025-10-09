@@ -1,0 +1,102 @@
+
+Gurobi 12.0.3 (win64) logging started Thu Oct  9 10:59:13 2025
+
+Set parameter LogFile to value "gurobi_log.txt"
+Set parameter Threads to value 4
+Set parameter Seed to value 42
+Set parameter Method to value 2
+Set parameter Presolve to value 1
+Set parameter NodeMethod to value 2
+Set parameter Cuts to value 1
+Set parameter Heuristics to value 0.1
+Set parameter MIPFocus to value 1
+Gurobi Optimizer version 12.0.3 build v12.0.3rc0 (win64 - Windows 11.0 (26100.2))
+
+CPU model: AMD Ryzen Threadripper PRO 7965WX 24-Cores, instruction set [SSE2|AVX|AVX2|AVX512]
+Thread count: 24 physical cores, 48 logical processors, using up to 4 threads
+
+Non-default parameters:
+MIPGap  0.25
+Method  2
+ScaleFlag  2
+Heuristics  0.1
+MIPFocus  1
+NodeMethod  2
+Cuts  1
+Presolve  1
+Seed  42
+Threads  4
+
+Optimize a model with 1269064 rows, 1264807 columns and 3840300 nonzeros
+Model fingerprint: 0x16de4b93
+Variable types: 818507 continuous, 446300 integer (446300 binary)
+Coefficient statistics:
+  Matrix range     [1e-02, 4e+04]
+  Objective range  [3e-02, 5e+05]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 4e+02]
+Presolve removed 918819 rows and 811586 columns (presolve time = 5s)...
+Presolve removed 918819 rows and 811586 columns
+Presolve time: 5.10s
+Presolved: 350245 rows, 453221 columns, 1535082 nonzeros
+Variable types: 208260 continuous, 244961 integer (244957 binary)
+Found heuristic solution: objective 3.872549e+08
+
+Explored 0 nodes (0 simplex iterations) in 6.33 seconds (6.97 work units)
+Thread count was 4 (of 48 available processors)
+
+Solution count 1: 3.87255e+08 
+
+Optimal solution found (tolerance 2.50e-01)
+Best objective 3.872549227744e+08, best bound 3.006492562652e+08, gap 22.3640%
+
+Gurobi 12.0.3 (win64) logging started Thu Oct  9 11:06:43 2025
+
+Set parameter LogFile to value "gurobi_log.txt"
+Set parameter Threads to value 4
+Set parameter Seed to value 42
+Set parameter Method to value 2
+Set parameter Presolve to value 1
+Set parameter NodeMethod to value 2
+Set parameter Cuts to value 1
+Set parameter Heuristics to value 0.1
+Set parameter MIPFocus to value 1
+Gurobi Optimizer version 12.0.3 build v12.0.3rc0 (win64 - Windows 11.0 (26100.2))
+
+CPU model: AMD Ryzen Threadripper PRO 7965WX 24-Cores, instruction set [SSE2|AVX|AVX2|AVX512]
+Thread count: 24 physical cores, 48 logical processors, using up to 4 threads
+
+Non-default parameters:
+MIPGap  0.25
+Method  2
+ScaleFlag  2
+Heuristics  0.1
+MIPFocus  1
+NodeMethod  2
+Cuts  1
+Presolve  1
+Seed  42
+Threads  4
+
+Optimize a model with 1269064 rows, 1264807 columns and 3840300 nonzeros
+Model fingerprint: 0x16de4b93
+Variable types: 818507 continuous, 446300 integer (446300 binary)
+Coefficient statistics:
+  Matrix range     [1e-02, 4e+04]
+  Objective range  [3e-02, 5e+05]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 4e+02]
+Presolve removed 918819 rows and 811586 columns (presolve time = 5s)...
+Presolve removed 918819 rows and 811586 columns
+Presolve time: 5.10s
+Presolved: 350245 rows, 453221 columns, 1535082 nonzeros
+Variable types: 208260 continuous, 244961 integer (244957 binary)
+Found heuristic solution: objective 3.872549e+08
+
+Explored 0 nodes (0 simplex iterations) in 6.35 seconds (6.97 work units)
+Thread count was 4 (of 48 available processors)
+
+Solution count 1: 3.87255e+08 
+
+Optimal solution found (tolerance 2.50e-01)
+Best objective 3.872549227744e+08, best bound 3.006492562652e+08, gap 22.3640%

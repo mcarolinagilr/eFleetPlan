@@ -1,13 +1,8 @@
 
-
-import pyomo.environ as pyo
-from pyomo.opt import SolverFactory 
 import pandas as pd
 import numpy as np
-import xlsxwriter as xl
 import matplotlib.pyplot as plt
 import os
-from glob import glob
 from matplotlib import rcParams
 
 from datetime import datetime
@@ -53,20 +48,25 @@ def plot_summary_table(file_path):
     category_order = df['Category'].drop_duplicates().tolist()
     df['Category'] = pd.Categorical(df['Category'], categories=category_order, ordered=True)
 
-    # Pivot table while preserving order
-    table_df = df.pivot_table(index='Category', columns='Description', values='Value', sort=False)
+    # Separate DT category
+    df_dt = df[df['Category'] == 'DT']
+    df_other = df[df['Category'] != 'DT']
+
+    # Pivot tables
+    table_df = df_other.pivot_table(index='Category', columns='Description', values='Value', sort=False)
+    table_dt = df_dt.pivot_table(index='Category', columns='Description', values='Value', sort=False)
 
     # Round values for better display
     table_df = table_df.round(2)
+    table_dt = table_dt.round(2)
 
     # Font setup
     rcParams['font.family'] = 'Times New Roman'
     rcParams['font.size'] = 12
 
-    # Plot table
-    fig, ax = plt.subplots(figsize=(8, len(table_df) * 0.5 ))
+    # Plot main table
+    fig, ax = plt.subplots(figsize=(8, len(table_df) * 0.5 + 1))
     ax.axis('off')
-
     table = ax.table(
         cellText=table_df.values,
         rowLabels=table_df.index,
@@ -75,14 +75,31 @@ def plot_summary_table(file_path):
         cellLoc='center',
         rowLoc='center'
     )
-
     table.auto_set_font_size(False)
     table.set_fontsize(11)
     table.scale(1, 1.5)
-
     plt.title('Infrastructure and Electricity Cost Summary (in SEK)', fontsize=14, pad=20)
     plt.tight_layout()
     plt.show()
+
+    # Plot DT table if exists
+    if not table_dt.empty:
+        fig_dt, ax_dt = plt.subplots(figsize=(8, 1.5))
+        ax_dt.axis('off')
+        table_dt_plot = ax_dt.table(
+            cellText=table_dt.values,
+            rowLabels=table_dt.index,
+            colLabels=table_dt.columns,
+            loc='center',
+            cellLoc='center',
+            rowLoc='center'
+        )
+        table_dt_plot.auto_set_font_size(False)
+        table_dt_plot.set_fontsize(11)
+        table_dt_plot.scale(1, 1.5)
+        plt.title('Distribution Terminal Summary', fontsize=14, pad=20)
+        plt.tight_layout()
+        plt.show()
     
     
 def graph_vehicles(file_path, n_days, n_vehicles):
@@ -290,7 +307,7 @@ def graph_chargingpower (file_path, folder_path):
     fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0), ncol=3, framealpha=0, fontsize=16)
 
     # Save the figure
-    plt.savefig(f'{folder_path}/EVChargers_chargingpower.jpg', 
+    plt.savefig(f'{folder_path}/NumberEVChargers_perchargingpower.jpg', 
                                     format='jpeg', bbox_inches='tight')
     plt.show()
 

@@ -1,0 +1,51 @@
+site_name: eFleetPlan Documentation
+site_description: Co-optimisation tool of charging infrastructure investment and electric fleet operations.
+site_author: Carolina Gil Ribeiro
+site_url: https://carolinagr.github.io/eFleetPlan
+repo_url: https://github.com/carolinagr/eFleetPlan
+repo_name: carolinagr/eFleetPlan
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.sections
+    - navigation.instant
+    - navigation.top
+    - content.code.copy
+    - toc.integrate
+    - content.tabs.link
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: light blue
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: light blue
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            show_source: true
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Modules and functions: modules.md
+  - API Reference: api.md
