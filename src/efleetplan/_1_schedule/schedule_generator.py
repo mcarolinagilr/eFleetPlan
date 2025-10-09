@@ -135,12 +135,50 @@ class ScheduleGenerator:
         :return: Consumption rate in kWh/km
         """
         rate = np.random.normal(self.vc.consumption_mean, self.vc.consumption_std)
+
+        mean_consumption = self.vc.consumption_mean
+        std_consumption = self.vc.consumption_std
+        mu = np.log(mean_consumption**2 / np.sqrt(std_consumption**2 + mean_consumption**2))
+        sigma = np.sqrt(np.log(1 + (std_consumption**2 / mean_consumption**2)))
+        rate = np.random.lognormal(mu, sigma)
+
         rate = max(rate, self.vc.consumption_min)
         rate = min(rate, self.vc.consumption_max)
         if distance_per_step > 0:
             rate = min(rate,  self.vc.total_cons_clip / distance_per_step)
         return rate
     
+    def sample_lognormal_distance_we(self):
+        """
+        Sample a lognormal-distributed distance, clipped to min and max.
+        """
+        mean_distance_we= self.cc.avg_distance_we
+        std_distance_we= self.cc.dev_distance_we
+        min_distance_we= self.cc.min_distance
+        max_distance_we= self.cc.max_distance
+
+        mu = np.log(mean_distance_we**2 / np.sqrt(std_distance_we**2 + mean_distance_we**2))
+        sigma = np.sqrt(np.log(1 + (std_distance_we**2 / mean_distance_we**2)))
+        total_distance = np.random.lognormal(mu, sigma)
+        total_distance = max([total_distance, min_distance_we])
+        total_distance = min([total_distance, max_distance_we])
+        return total_distance
+    
+    def sample_lognormal_distance_wd(self):
+        """
+        Sample a lognormal-distributed distance, clipped to min and max.
+        """
+        mean_distance_wd= self.cc.avg_distance_wd
+        std_distance_wd= self.cc.dev_distance_wd
+        min_distance_wd= self.cc.min_distance
+        max_distance_wd= self.cc.max_distance
+
+        mu = np.log(mean_distance_wd**2 / np.sqrt(std_distance_wd**2 + mean_distance_wd**2))
+        sigma = np.sqrt(np.log(1 + (std_distance_wd**2 / mean_distance_wd**2)))
+        total_distance = np.random.lognormal(mu, sigma)
+        total_distance = max([total_distance, min_distance_wd])
+        total_distance = min([total_distance, max_distance_wd])
+        return total_distance
     
     
     def generate_schedule(self):
@@ -168,7 +206,7 @@ class ScheduleGenerator:
             "date": pd.date_range(start=self.starting_date, end=self.ending_date, freq=self.freq),
             "Distance_km": 0.0,
             "Consumption_kWh": 0.0,
-            "Distance_km": 0.0,
+            "Consumption_rate_corrected": 0.0,
             "Location": "home",
             "ChargingStation": "home",
             "ID": str(self.vehicle_id),
@@ -211,11 +249,8 @@ class ScheduleGenerator:
 
                     trip_hours = (ret_date - dep_date).total_seconds() / 3600
                     
-                    total_distance = np.random.normal(self.cc.avg_distance_wd, self.cc.dev_distance_wd)
-                    total_distance = max([total_distance, self.cc.min_distance])
-                    total_distance = min([total_distance, self.cc.max_distance])
+                    total_distance = self.sample_lognormal_distance_we()
                     
-
 
                     # Calculate distance traveled per hour #NEW
                     distance_per_step = total_distance / trip_hours if trip_hours > 0 else 0
@@ -257,10 +292,7 @@ class ScheduleGenerator:
 
                     trip_hours = (ret_date - dep_date).total_seconds() / 3600
                     
-                    total_distance = np.random.normal(self.cc.avg_distance_we, self.cc.dev_distance_we)
-                    total_distance = max([total_distance, self.cc.min_distance])
-                    total_distance = min([total_distance, self.cc.max_distance])
-                    
+                    total_distance = self.sample_lognormal_distance_wd()
  
 
                     # Calculate distance traveled per hour #NEW
@@ -288,7 +320,7 @@ class ScheduleGenerator:
 
                 consumption_factor = self.consumption_factor(step)
                 ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (distance_per_step) * consumption_rate * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = consumption_rate * consumption_factor    
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_rate_corrected"] = consumption_rate * consumption_factor    
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
                 ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 0
                 ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
@@ -297,7 +329,7 @@ class ScheduleGenerator:
             else:
                 ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0
                 ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = 0.0
-                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0 
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_rate_corrected"] = 0.0 
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 1
                 ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 1
                 ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
@@ -319,7 +351,7 @@ class ScheduleGenerator:
             "date": pd.date_range(start=self.starting_date, end=self.ending_date, freq=self.freq),
             "Distance_km": 0.0,
             "Consumption_kWh": 0.0,
-            "Distance_km": 0.0,
+            "Consumption_rate_corrected": 0.0,
             "Location": 1,
             "ChargingStation": 1,
             "ID": str(self.vehicle_id),
@@ -386,9 +418,7 @@ class ScheduleGenerator:
                     first_trip_hours = (pause_beg_date - dep_date).total_seconds() / 3600
                     second_trip_hours = (ret_date - pause_end_date).total_seconds() / 3600
                     
-                    total_distance = np.random.normal(self.cc.avg_distance_wd, self.cc.dev_distance_wd)/2
-                    total_distance = max([total_distance, self.cc.min_distance])
-                    total_distance = min([total_distance, self.cc.max_distance])
+                    total_distance = self.sample_lognormal_distance_we()
 
 
 
@@ -440,9 +470,7 @@ class ScheduleGenerator:
                     first_trip_hours = (pause_beg_date - dep_date).total_seconds() / 3600
                     second_trip_hours = (ret_date - pause_end_date).total_seconds() / 3600
                     
-                    total_distance = np.random.normal(self.cc.avg_distance_we, self.cc.dev_distance_we)/2
-                    total_distance = max([total_distance, self.cc.min_distance])
-                    total_distance = min([total_distance, self.cc.max_distance])
+                    total_distance = self.sample_lognormal_distance_wd()
 
                     
             # if trip is ongoing
@@ -454,7 +482,7 @@ class ScheduleGenerator:
                 consumption_rate = self.consumption_rate(total_distance)
 
                 ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (total_distance / first_trip_hours) * consumption_rate * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_rate_corrected"] = consumption_rate * consumption_factor
 
                 # set relevant entries
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
@@ -470,7 +498,7 @@ class ScheduleGenerator:
                 consumption_rate = self.consumption_rate(total_distance)
 
                 ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (total_distance / second_trip_hours) * consumption_rate * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_rate_corrected"] = consumption_rate * consumption_factor
 
                 # set relevant entries
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
@@ -483,7 +511,7 @@ class ScheduleGenerator:
             else:
                 ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0
                 ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = 0.0
-                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0 
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_rate_corrected"] = 0.0 
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 1
                 ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 1
                 ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
@@ -510,7 +538,7 @@ class ScheduleGenerator:
                         consumption_rate = self.consumption_rate(total_distance)
 
                         ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (total_distance / trip_hours) * consumption_rate * consumption_factor
-                        ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = consumption_rate * consumption_factor
+                        ev_schedule.loc[ev_schedule["date"] == step, "Consumption_rate_corrected"] = consumption_rate * consumption_factor
 
                         # set relevant entries
                         ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
@@ -528,7 +556,7 @@ class ScheduleGenerator:
             "date": pd.date_range(start=self.starting_date, end=self.ending_date, freq=self.freq),
             "Distance_km": 0.0,
             "Consumption_kWh": 0.0,
-            "Distance_km": 0.0,
+            "Consumption_rate_corrected": 0.0,
             "Location": "home",
             "ChargingStation": "home",
             "ID": str(self.vehicle_id),
@@ -571,9 +599,7 @@ class ScheduleGenerator:
 
                     trip_hours = (ret_date - dep_date).total_seconds() / 3600
                     
-                    total_distance = np.random.normal(self.cc.avg_distance_wd, self.cc.dev_distance_wd)
-                    total_distance = max([total_distance, self.cc.min_distance])
-                    total_distance = min([total_distance, self.cc.max_distance])
+                    total_distance = self.sample_lognormal_distance_we()
                     
 
 
@@ -617,9 +643,7 @@ class ScheduleGenerator:
 
                     trip_hours = (ret_date - dep_date).total_seconds() / 3600
                     
-                    total_distance = np.random.normal(self.cc.avg_distance_we, self.cc.dev_distance_we)
-                    total_distance = max([total_distance, self.cc.min_distance])
-                    total_distance = min([total_distance, self.cc.max_distance])
+                    total_distance = self.sample_lognormal_distance_wd()
                     
  
 
@@ -648,7 +672,7 @@ class ScheduleGenerator:
 
                 consumption_factor = self.consumption_factor(step)
                 ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (distance_per_step) * consumption_rate * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_rate_corrected"] = consumption_rate * consumption_factor
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
                 ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 0
                 ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
@@ -657,7 +681,7 @@ class ScheduleGenerator:
             else:
                 ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0
                 ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = 0.0
-                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0 
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_rate_corrected"] = 0.0 
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 1
                 ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 1
                 ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
@@ -723,7 +747,7 @@ def generate_fleet_schedules(env_config, sch_config):
 
     # Ensure required columns exist (logging only)
     required_columns = [
-        'Consumption_kWh', 'Distance_km', 'Location', 
+        'Consumption_kWh', 'Distance_km','Consumption_rate_corrected', 'Location', 
         'ChargingStation', 'PowerRating_kW', 'ScheduleType', 
         'VehicleType', 'CompanyType', 'consumption_factor'
     ]

@@ -57,8 +57,8 @@ class ScheduleConfig:
 
             self.min_dep = 6
             self.max_dep = 11
-            self.min_return_hour = 18  # Return hour must be bigger or equal to this value
-            self.max_return_hour = 22  # Return hour must be smaller or equal to this value           
+            self.min_return_hour = 18  # Return step must be bigger or equal to this value
+            self.max_return_hour = 22  # Return step must be smaller or equal to this value           
         
             
             
@@ -115,8 +115,8 @@ class ScheduleConfig:
 
             self.min_dep = sch_config["Custom Schedule"]["minimum departure"]
             self.max_dep = sch_config["Custom Schedule"]["maximum departure"]
-            self.min_return_hour = sch_config["Custom Schedule"]["minimum return"]  # Return hour must be bigger or equal to this value
-            self.max_return_hour = sch_config["Custom Schedule"]["maximum return"]  # Return hour must be smaller or equal to this value                                        
+            self.min_return_hour = sch_config["Custom Schedule"]["minimum return"]  # Return step must be bigger or equal to this value
+            self.max_return_hour = sch_config["Custom Schedule"]["maximum return"]  # Return step must be smaller or equal to this value                                        
     
     
 class VehicleConfig:
@@ -166,8 +166,8 @@ class CompanyConfig:
             self.dev_distance_we = 15
             self.min_distance = 30
             self.max_distance = 300
-            self.min_distance_per_hour = 1  # example minimum distance in km
-            self.max_distance_per_hour = 50  # example maximum distance in km
+            self.min_distance_per_step = 1  # example minimum distance in km
+            self.max_distance_per_step = 50  # example maximum distance in km
             self.avg_stops = 52.4  # average number of stops per day 
             self.dev_stops = 11.7  # standard deviation of stops per day
             
@@ -179,8 +179,8 @@ class CompanyConfig:
             self.dev_distance_we = 16
             self.min_distance = 30
             self.max_distance = 200
-            self.min_distance_per_hour = 1  # example minimum distance in km
-            self.max_distance_per_hour = 50  # example maximum distance in km
+            self.min_distance_per_step = 1  # example minimum distance in km
+            self.max_distance_per_step = 50  # example maximum distance in km
             self.avg_stops = 3.6 #average number of stops per day 
             self.dev_stops = 1.1 # standard deviation of stops per day
             
@@ -192,8 +192,8 @@ class CompanyConfig:
             self.dev_distance_we = 7
             self.min_distance = 30
             self.max_distance = 200
-            self.min_distance_per_hour = 1  # example minimum distance in km
-            self.max_distance_per_hour = 50  # example maximum distance in km
+            self.min_distance_per_step = 1  # example minimum distance in km
+            self.max_distance_per_step = 50  # example maximum distance in km
             self.avg_stops = 52.4  # average number of stops per day 
             self.dev_stops = 11.7  # standard deviation of stops per day
             
@@ -205,8 +205,8 @@ class CompanyConfig:
             self.dev_distance_we = 8
             self.min_distance = 30
             self.max_distance = 200
-            self.min_distance_per_hour = 1  # example minimum distance in km
-            self.max_distance_per_hour = 50  # example maximum distance in km
+            self.min_distance_per_step = 1  # example minimum distance in km
+            self.max_distance_per_step = 50  # example maximum distance in km
             self.avg_stops = 3.7  # average number of stops per day 
             self.dev_stops = 0.5  # standard deviation of stops per day
             
@@ -218,8 +218,8 @@ class CompanyConfig:
             self.dev_distance_we = 21
             self.min_distance = 30
             self.max_distance = 200
-            self.min_distance_per_hour = 1  # example minimum distance in km
-            self.max_distance_per_hour = 50  # example maximum distance in km
+            self.min_distance_per_step = 1  # example minimum distance in km
+            self.max_distance_per_step = 50  # example maximum distance in km
             self.avg_stops = 11  # average number of stops per day 
             self.dev_stops = 4.1  # standard deviation of stops per day
             
@@ -231,8 +231,8 @@ class CompanyConfig:
             self.dev_distance_we = 23
             self.min_distance = 30
             self.max_distance = 200
-            self.min_distance_per_hour = 1  # example minimum distance in km
-            self.max_distance_per_hour = 50  # example maximum distance in km
+            self.min_distance_per_step = 1  # example minimum distance in km
+            self.max_distance_per_step = 50  # example maximum distance in km
             self.avg_stops = 98.1  # average number of stops per day 
             self.dev_stops = 21.8  # standard deviation of stops per day
             
@@ -244,8 +244,8 @@ class CompanyConfig:
             self.dev_distance_we = 8
             self.min_distance = 30
             self.max_distance = 200
-            self.min_distance_per_hour = 1  # example minimum distance in km
-            self.max_distance_per_hour = 50  # example maximum distance in km
+            self.min_distance_per_step = 1  # example minimum distance in km
+            self.max_distance_per_step = 50  # example maximum distance in km
             self.avg_stops = 4.1  # average number of stops per day 
             self.dev_stops = 0.3  # standard deviation of stops per day
 
@@ -257,8 +257,8 @@ class CompanyConfig:
             self.dev_distance_we = 50
             self.min_distance = 30
             self.max_distance = 400
-            self.min_distance_per_hour = 1  # example minimum distance in km
-            self.max_distance_per_hour = 70  # example maximum distance in km
+            self.min_distance_per_step = 1  # example minimum distance in km
+            self.max_distance_per_step = 70  # example maximum distance in km
             self.avg_stops = 52.4  # average number of stops per day 
             self.dev_stops = 11.7  # standard deviation of stops per day
             
@@ -270,8 +270,8 @@ class CompanyConfig:
             self.dev_distance_we = 23
             self.min_distance = 20
             self.max_distance = 200
-            self.min_distance_per_hour = 1  # example minimum distance in km
-            self.max_distance_per_hour = 50  # example maximum distance in km
+            self.min_distance_per_step = 1  # example minimum distance in km
+            self.max_distance_per_step = 50  # example maximum distance in km
             self.avg_stops = 11.7  # average number of stops per day 
             self.dev_stops = 3.3  # standard deviation of stops per day
             
@@ -283,8 +283,8 @@ class CompanyConfig:
             self.dev_distance_we = 6.8
             self.min_distance = 20
             self.max_distance = 200
-            self.min_distance_per_hour = 1  # example minimum distance in km
-            self.max_distance_per_hour = 50  # example maximum distance in km
+            self.min_distance_per_step = 1  # example minimum distance in km
+            self.max_distance_per_step = 50  # example maximum distance in km
             self.avg_stops = 3.4  # average number of stops per day 
             self.dev_stops = 0.4  # standard deviation of stops per day
 
@@ -296,8 +296,8 @@ class CompanyConfig:
             self.dev_distance_we = sch_config["Custom Distance"]["standard deviation weekend"]
             self.min_distance = sch_config["Custom Distance"]["min distance"]
             self.max_distance = sch_config["Custom Distance"]["max distance"]
-            self.min_distance_per_hour = sch_config["Custom Distance"]["min distance per hour"]
-            self.max_distance_per_hour = sch_config["Custom Distance"]["max distance per hour"]
+            self.min_distance_per_step = sch_config["Custom Distance"]["min distance per step"]
+            self.max_distance_per_step = sch_config["Custom Distance"]["max distance per step"]
             self.avg_stops = sch_config["Custom Distance"]["average stops"]
             self.dev_stops = sch_config["Custom Distance"]["standard deviation stops"]
 

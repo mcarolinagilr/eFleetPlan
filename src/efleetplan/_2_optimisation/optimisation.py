@@ -136,7 +136,9 @@ def optimisation(opt_config, cost_config, power_config):
     m.t = pyo.Set(initialize=[x for x in range(1, 24 * days + 1)])  # Time steps
     m.b = pyo.Set(initialize=[x for x in range(1, EVs + 1)])        # EVs
     m.d = pyo.Set(initialize=[x for x in range(1, days + 1)])       # Days
-    fast_charging_levels = [50, 150, 350]                          # Fast charging power levels
+
+    fast_charging_levels = ['f1', 'f2', 'f3']                          # Fast charging power levels
+
     m.f = pyo.Set(initialize=fast_charging_levels)                 # Fast charging levels
 
     # Parameters
@@ -148,14 +150,14 @@ def optimisation(opt_config, cost_config, power_config):
 
     Infrastructure_cost = cost_config["Infrastructure_cost"]
     
-    Charger_Power = cost_config["Charger_Power"]
+    Charger_Power = power_config["Charger_Power"]
     maintenance_cost = cost_config["maintenance_cost"]
 
     Annualized_Infrastructure_cost = {
         's': Infrastructure_cost['s'] * Annuity_factor + maintenance_cost['s'],
-        50: Infrastructure_cost[50] * Annuity_factor + maintenance_cost[50],
-        150: Infrastructure_cost[150] * Annuity_factor + maintenance_cost[150],
-        350: Infrastructure_cost[350] * Annuity_factor + maintenance_cost[350]
+        'f1': Infrastructure_cost['f1'] * Annuity_factor + maintenance_cost['f1'],
+        'f2': Infrastructure_cost['f2'] * Annuity_factor + maintenance_cost['f2'],
+        'f3': Infrastructure_cost['f3'] * Annuity_factor + maintenance_cost['f3']
     }
 
     Infrastructure_subscription = cost_config["Infrastructure_subscription"]
@@ -402,7 +404,7 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
     
     # Parameters
     
-    fast_charging_levels = [50, 150, 350]
+    fast_charging_levels = ['f3', 'f3', 'f3']
 
     
     Ch_losses = power_config["Charging_losses"]  # Charging efficiency
@@ -412,14 +414,14 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
 
     Infrastructure_cost = cost_config["Infrastructure_cost"]
     
-    Charger_Power = cost_config["Charger_Power"]
+    Charger_Power = power_config["Charger_Power"]
     maintenance_cost = cost_config["maintenance_cost"]
 
     Annualized_Infrastructure_cost = {
         's': Infrastructure_cost['s'] * Annuity_factor + maintenance_cost['s'],
-        50: Infrastructure_cost[50] * Annuity_factor + maintenance_cost[50],
-        150: Infrastructure_cost[150] * Annuity_factor + maintenance_cost[150],
-        350: Infrastructure_cost[350] * Annuity_factor + maintenance_cost[350]
+        'f1': Infrastructure_cost['f1'] * Annuity_factor + maintenance_cost['f1'],
+        'f2': Infrastructure_cost['f2'] * Annuity_factor + maintenance_cost['f2'],
+        'f3': Infrastructure_cost['f3'] * Annuity_factor + maintenance_cost['f3']
     }
 
     Infrastructure_subscription = cost_config["Infrastructure_subscription"]
@@ -450,14 +452,14 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
             'Cost of energy supply from grid at DT': sum(pyo.value(m.DT_Grid_purchase[b, t] * (Price[t] + Price_FixedrateDT)) for b in m.b),
             'Cost of energy supply on route': sum(pyo.value((m.Total_Grid_purchase[b, t] - m.DT_Grid_purchase[b, t]) * (Price_FixedrateRoute)) for b in m.b),
             'EVs slow charging': sum(pyo.value(m.Charging_slow[b, t]) for b in m.b),
-            'EVs fast charging 50kW': sum(pyo.value(m.Charging_fast[b, t, 50]) for b in m.b),
-            'EVs fast charging 150kW': sum(pyo.value(m.Charging_fast[b, t, 150]) for b in m.b),
-            'EVs fast charging 350kW': sum(pyo.value(m.Charging_fast[b, t, 350]) for b in m.b),
+            'EVs fast charging 50kW': sum(pyo.value(m.Charging_fast[b, t, 'f1']) for b in m.b),
+            'EVs fast charging 150kW': sum(pyo.value(m.Charging_fast[b, t, 'f2']) for b in m.b),
+            'EVs fast charging 350kW': sum(pyo.value(m.Charging_fast[b, t, 'f3']) for b in m.b),
             'EVs route charging': sum(pyo.value(m.Charging_Route[b, t]) for b in m.b),
             'Slow Charging Hourly': sum(pyo.value(m.Charge_hourly_slow[b, t]) for b in m.b),
-            'Fast Charging Hourly 50kW':sum(pyo.value(m.Charge_hourly_fast[b, t, 50]) for b in m.b),
-            'Fast Charging Hourly 150kW': sum(pyo.value(m.Charge_hourly_fast[b, t, 150]) for b in m.b),
-            'Fast Charging Hourly 350kW': sum(pyo.value(m.Charge_hourly_fast[b, t, 350]) for b in m.b),
+            'Fast Charging Hourly 50kW': sum(pyo.value(m.Charge_hourly_fast[b, t, 'f1']) for b in m.b),
+            'Fast Charging Hourly 150kW': sum(pyo.value(m.Charge_hourly_fast[b, t, 'f2']) for b in m.b),
+            'Fast Charging Hourly 350kW': sum(pyo.value(m.Charge_hourly_fast[b, t, 'f3']) for b in m.b),
             'Route Charging Hourly': sum(pyo.value(m.Charge_hourly_Route[b, t]) for b in m.b)
         })
     
@@ -533,9 +535,9 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
                     pyo.value((m.Total_Grid_purchase[b, t] - m.DT_Grid_purchase[b, t]) * (Price_FixedrateRoute)),
                     EV_availability[b, t],
                     pyo.value(m.Charge_hourly_slow[b, t]),
-                    pyo.value(m.Charge_hourly_fast[b, t, 50]),
-                    pyo.value(m.Charge_hourly_fast[b, t, 150]),
-                    pyo.value(m.Charge_hourly_fast[b, t, 350]),
+                    pyo.value(m.Charge_hourly_fast[b, t, 'f1']),
+                    pyo.value(m.Charge_hourly_fast[b, t, 'f2']),
+                    pyo.value(m.Charge_hourly_fast[b, t, 'f3']),
                     pyo.value(m.Charge_hourly_Route[b, t]),
                     pyo.value(Distance_km[b, t])
                 ])
