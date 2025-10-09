@@ -58,13 +58,21 @@ To use the optimisation feature, you need a valid Gurobi license and installatio
 
 
 ## How to use the tool
-To use the full tool, run the Optimal Charging Tool notebook: 
-(notebooks/**0_OPTIMAL INVESTMENT AND OPERATION TOOL.ipynb**)
-You can run the models individually:
+
+### Notebook files
+You can run eFleetTool via the provided Jupyter notebooks:
+
 - notebooks/Module 1. Schedule Generation Module.ipynb for Module 1, to create schedules for an electric LCV fleet
+
 - notebooks/Module 2. Co-optimisation.ipynb for Module 2, to run the optimisation model
 
-## Configurations
+**Steps**
+1. Install the project dependencies and launch Jupyter (e.g., `jupyter lab` or `jupyter notebook`).
+2. Open the notebook for the module you want to run.
+3. Execute the cells from top to bottom, adjusting the configuration sections as needed.
+
+
+### Configurations
 The software configuration has five sections for schedule generation and optimization:
 
 1.1 Schedule generator configurations: Define the parameters required to generate the travel and charging patterns for each vehicle in the LCV fleet.

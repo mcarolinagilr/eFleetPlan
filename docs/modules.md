@@ -27,39 +27,67 @@ Outputs: Returns an in-memory schedule object or dataframe representing one vehi
 Purpose: Generates schedules for an entire vehicle fleet by repeatedly calling generate_schedule() and combining the individual outputs into comprehensive datasets.
 Inputs:
 - env_config (environmental configuration):
+
     - original_seed: Seed for the random number generator (optional).
+
     - gen_start_date / gen_end_date: Start and end dates for schedule generation.
+
     - freq: Temporal frequency of data (e.g., 'h' for hourly).
+
     - consumption_factor_file: Path to the CSV file containing hourly energy consumption factors.
+
 - sch_config (schedule configuration):
+
     - Vehicles number: Number of vehicles in the fleet.
+
     - Type of schedule: Share of each schedule type (type a, type b, or type c).
+
     - Custom Schedule: Average and standard deviation of departure and return times (weekday/weekend) with minimum and maximum time bounds.
+
     - Type of vehicle: Share of each vehicle type (Renault, Toyota, Custom).
+
     - Custom Vehicle: Custom consumption parameters (mean, std, min, max) and battery capacity.
+
     - Company type: Specifies the operational profile (e.g., Distribution, LineHaul, Mail, Building, Custom).
+
     - Custom Distance: Average daily distance, standard deviations, and limits for weekdays and weekends, along with stop frequency.
+
     - Schedule name: Custom label for identifying the generated schedule.
+
 Outputs: 
+
 Generates several CSV files containing the full schedule datasets:
+
 - 2_all_vehicles_consumption_km.csv: Hourly energy consumption (kWh) and distance per vehicle.
+
 - 2_all_vehicles_Distance_km.csv: Hourly distance per vehicle (km).
+
 - 2_all_vehicles_ChargingStation.csv: Vehicle availability at depot or on route.
+
 - 2_all_vehicles_PowerRating_kW.csv: Charging power (kW) per vehicle.
+
 
 ## File generate_graphs.py
 
 Description: Generates visual summaries of the schedules created by the schedule_generator.py module.
 
+
 ### Function generate_graphs()
 
 Purpose: Creates plots showing the average number of vehicles at the depot and their average hourly energy consumption.
+
 Inputs:
+
 - Output CSV files from schedule_generator.py.
+
 - A designated output folder path.
+
 Outputs:
+
 Generates and saves the following figures:
+
 - hourly_avg_vehicles_at_depot_{folder}.jpeg — hourly average number of vehicles at the depot.
+
 - hourly_avg_energy_consumption_{folder}.jpeg — hourly average energy consumption (kWh).
 
 
