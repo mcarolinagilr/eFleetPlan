@@ -1,13 +1,8 @@
-import datetime
 import math
 import pandas as pd
 import numpy as np
 import datetime as dt
-import time
 import os
-from pathlib import Path
-import matplotlib.pyplot as plt
-from typing import Literal
 
 
 
@@ -131,9 +126,10 @@ class ScheduleGenerator:
         
         return consumption_factors    
       
-    def consumption_rate(self, total_distance: float) -> float:
+    def consumption_rate(self, distance_per_step: float) -> float:
         """
-        Calculate the consumption rate (kWh/km) based on total distance.
+        This calculates a consumption rate in kWh/km based on a normal distribution, clipped to min and max values.
+        Also that per step the consumption does not exceed the vehicle's total consumption capacity.
 
         :param total_distance: Total distance traveled in km
         :return: Consumption rate in kWh/km
@@ -141,8 +137,8 @@ class ScheduleGenerator:
         rate = np.random.normal(self.vc.consumption_mean, self.vc.consumption_std)
         rate = max(rate, self.vc.consumption_min)
         rate = min(rate, self.vc.consumption_max)
-        #if total_distance > 0:
-            #rate = min(rate,  self.vc.total_cons_clip / total_distance)
+        if distance_per_step > 0:
+            rate = min(rate,  self.vc.total_cons_clip / distance_per_step)
         return rate
     
     
@@ -172,7 +168,7 @@ class ScheduleGenerator:
             "date": pd.date_range(start=self.starting_date, end=self.ending_date, freq=self.freq),
             "Distance_km": 0.0,
             "Consumption_kWh": 0.0,
-            "Consumption_km": 0.0,
+            "Distance_km": 0.0,
             "Location": "home",
             "ChargingStation": "home",
             "ID": str(self.vehicle_id),
@@ -222,16 +218,16 @@ class ScheduleGenerator:
 
 
                     # Calculate distance traveled per hour #NEW
-                    distance_per_hour = total_distance / trip_hours if trip_hours > 0 else 0
+                    distance_per_step = total_distance / trip_hours if trip_hours > 0 else 0
 
                     # Apply min and max constraints #NEW
-                    if distance_per_hour < self.cc.min_distance_per_hour:
-                        distance_per_hour = self.cc.min_distance_per_hour
-                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
+                    if distance_per_step < self.cc.min_distance_per_step:
+                        distance_per_step = self.cc.min_distance_per_step
+                        total_distance = distance_per_step * trip_hours  # Adjust total distance accordingly
 
-                    if distance_per_hour > self.cc.max_distance_per_hour:
-                        distance_per_hour = self.cc.max_distance_per_hour
-                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
+                    if distance_per_step > self.cc.max_distance_per_step:
+                        distance_per_step = self.cc.max_distance_per_step
+                        total_distance = distance_per_step * trip_hours  # Adjust total distance accordingly
                     
                     if total_distance < 0:
                         raise ValueError("Distance is negative")
@@ -268,16 +264,16 @@ class ScheduleGenerator:
  
 
                     # Calculate distance traveled per hour #NEW
-                    distance_per_hour = total_distance / trip_hours if trip_hours > 0 else 0
+                    distance_per_step = total_distance / trip_hours if trip_hours > 0 else 0
 
                     # Apply min and max constraints #NEW
-                    if distance_per_hour < self.cc.min_distance_per_hour:
-                        distance_per_hour = self.cc.min_distance_per_hour
-                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
+                    if distance_per_step < self.cc.min_distance_per_step:
+                        distance_per_step = self.cc.min_distance_per_step
+                        total_distance = distance_per_step * trip_hours  # Adjust total distance accordingly
 
-                    if distance_per_hour > self.cc.max_distance_per_hour:
-                        distance_per_hour = self.cc.max_distance_per_hour
-                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
+                    if distance_per_step > self.cc.max_distance_per_step:
+                        distance_per_step = self.cc.max_distance_per_step
+                        total_distance = distance_per_step * trip_hours  # Adjust total distance accordingly
                     
                     if total_distance < 0:
                         raise ValueError("Distance is negative")
@@ -286,13 +282,13 @@ class ScheduleGenerator:
             # if trip is ongoing
             if (step >= dep_date) and (step < ret_date):
 
-                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = total_distance / trip_hours
-                consumption_rate = self.consumption_rate(total_distance)  
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = distance_per_step
+                consumption_rate = self.consumption_rate(distance_per_step)  
 
 
                 consumption_factor = self.consumption_factor(step)
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (distance_per_hour) * consumption_rate * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = consumption_rate * consumption_factor    
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (distance_per_step) * consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = consumption_rate * consumption_factor    
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
                 ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 0
                 ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
@@ -301,7 +297,7 @@ class ScheduleGenerator:
             else:
                 ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0
                 ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = 0.0
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = 0.0 
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0 
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 1
                 ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 1
                 ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
@@ -323,7 +319,7 @@ class ScheduleGenerator:
             "date": pd.date_range(start=self.starting_date, end=self.ending_date, freq=self.freq),
             "Distance_km": 0.0,
             "Consumption_kWh": 0.0,
-            "Consumption_km": 0.0,
+            "Distance_km": 0.0,
             "Location": 1,
             "ChargingStation": 1,
             "ID": str(self.vehicle_id),
@@ -458,7 +454,7 @@ class ScheduleGenerator:
                 consumption_rate = self.consumption_rate(total_distance)
 
                 ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (total_distance / first_trip_hours) * consumption_rate * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = consumption_rate * consumption_factor
 
                 # set relevant entries
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
@@ -474,7 +470,7 @@ class ScheduleGenerator:
                 consumption_rate = self.consumption_rate(total_distance)
 
                 ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (total_distance / second_trip_hours) * consumption_rate * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = consumption_rate * consumption_factor
 
                 # set relevant entries
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
@@ -487,7 +483,7 @@ class ScheduleGenerator:
             else:
                 ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0
                 ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = 0.0
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = 0.0 
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0 
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 1
                 ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 1
                 ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
@@ -514,7 +510,7 @@ class ScheduleGenerator:
                         consumption_rate = self.consumption_rate(total_distance)
 
                         ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (total_distance / trip_hours) * consumption_rate * consumption_factor
-                        ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = consumption_rate * consumption_factor
+                        ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = consumption_rate * consumption_factor
 
                         # set relevant entries
                         ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
@@ -532,7 +528,7 @@ class ScheduleGenerator:
             "date": pd.date_range(start=self.starting_date, end=self.ending_date, freq=self.freq),
             "Distance_km": 0.0,
             "Consumption_kWh": 0.0,
-            "Consumption_km": 0.0,
+            "Distance_km": 0.0,
             "Location": "home",
             "ChargingStation": "home",
             "ID": str(self.vehicle_id),
@@ -582,16 +578,16 @@ class ScheduleGenerator:
 
 
                     # Calculate distance traveled per hour #NEW
-                    distance_per_hour = total_distance / trip_hours if trip_hours > 0 else 0
+                    distance_per_step = total_distance / trip_hours if trip_hours > 0 else 0
 
                     # Apply min and max constraints #NEW
-                    if distance_per_hour < self.cc.min_distance_per_hour:
-                        distance_per_hour = self.cc.min_distance_per_hour
-                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
+                    if distance_per_step < self.cc.min_distance_per_step:
+                        distance_per_step = self.cc.min_distance_per_step
+                        total_distance = distance_per_step * trip_hours  # Adjust total distance accordingly
 
-                    if distance_per_hour > self.cc.max_distance_per_hour:
-                        distance_per_hour = self.cc.max_distance_per_hour
-                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
+                    if distance_per_step > self.cc.max_distance_per_step:
+                        distance_per_step = self.cc.max_distance_per_step
+                        total_distance = distance_per_step * trip_hours  # Adjust total distance accordingly
                     
                     if total_distance < 0:
                         raise ValueError("Distance is negative")
@@ -628,16 +624,16 @@ class ScheduleGenerator:
  
 
                     # Calculate distance traveled per hour #NEW
-                    distance_per_hour = total_distance / trip_hours if trip_hours > 0 else 0
+                    distance_per_step = total_distance / trip_hours if trip_hours > 0 else 0
 
                     # Apply min and max constraints #NEW
-                    if distance_per_hour < self.cc.min_distance_per_hour:
-                        distance_per_hour = self.cc.min_distance_per_hour
-                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
+                    if distance_per_step < self.cc.min_distance_per_step:
+                        distance_per_step = self.cc.min_distance_per_step
+                        total_distance = distance_per_step * trip_hours  # Adjust total distance accordingly
 
-                    if distance_per_hour > self.cc.max_distance_per_hour:
-                        distance_per_hour = self.cc.max_distance_per_hour
-                        total_distance = distance_per_hour * trip_hours  # Adjust total distance accordingly
+                    if distance_per_step > self.cc.max_distance_per_step:
+                        distance_per_step = self.cc.max_distance_per_step
+                        total_distance = distance_per_step * trip_hours  # Adjust total distance accordingly
                     
                     if total_distance < 0:
                         raise ValueError("Distance is negative")
@@ -651,8 +647,8 @@ class ScheduleGenerator:
 
 
                 consumption_factor = self.consumption_factor(step)
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (distance_per_hour) * consumption_rate * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (distance_per_step) * consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = consumption_rate * consumption_factor
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
                 ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 0
                 ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
@@ -661,7 +657,7 @@ class ScheduleGenerator:
             else:
                 ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0
                 ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = 0.0
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_km"] = 0.0 
+                ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = 0.0 
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 1
                 ev_schedule.loc[ev_schedule["date"] == step, "ChargingStation"] = 1
                 ev_schedule.loc[ev_schedule["date"] == step, "ID"] = str(self.vehicle_id)
@@ -727,7 +723,7 @@ def generate_fleet_schedules(env_config, sch_config):
 
     # Ensure required columns exist (logging only)
     required_columns = [
-        'Consumption_kWh', 'Consumption_km', 'Location', 
+        'Consumption_kWh', 'Distance_km', 'Location', 
         'ChargingStation', 'PowerRating_kW', 'ScheduleType', 
         'VehicleType', 'CompanyType', 'consumption_factor'
     ]
