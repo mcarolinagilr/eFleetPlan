@@ -102,7 +102,7 @@ def plot_summary_table(file_path):
         plt.show()
     
     
-def graph_vehicles(file_path, n_days, n_vehicles):
+def graph_vehicles(folder_path, file_path, n_days, n_vehicles):
     df = pd.read_csv(file_path, encoding='utf-8-sig')
 
     # Font setup
@@ -110,7 +110,7 @@ def graph_vehicles(file_path, n_days, n_vehicles):
     rcParams['font.size'] = 16
 
     # Create a subplot for each vehicle
-    fig, axs = plt.subplots(nrows=n_vehicles, ncols=1, figsize=(18, 3 * n_vehicles + 2), sharex=True)
+    fig, axs = plt.subplots(nrows=n_vehicles, ncols=1, figsize=(16, 3 * n_vehicles + 2), sharex=True)
     fig.subplots_adjust(hspace=0.6)
 
     # Ensure axs is always an array for consistent indexing
@@ -140,11 +140,11 @@ def graph_vehicles(file_path, n_days, n_vehicles):
 
         # Style
         ax.set_ylabel(f'V{vehicle_id}\nPower (kWh)', fontsize=14)
-        ax.grid(True, axis='y', linestyle='dashed', linewidth=0.5, color='black')
+        ax.grid(True, axis='y', linewidth=0.5, color='black')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.margins(x=0.01)
-        ax.set_ylim(0, 40)
+        ax.set_ylim(0, 50)
         # Add secondary axis for Storage Level
         ax2 = ax.twinx()
         ax2.plot(vehicle_data['TimeIndex'], vehicle_data['Storage Level'], label='SOC', linewidth=1.5, color='green', linestyle='dashed')
@@ -178,7 +178,7 @@ def graph_vehicles(file_path, n_days, n_vehicles):
     fig.suptitle('Charging and discharging power and SOC per vehicle', fontsize=20, y=0.99)
     plt.tight_layout()
 
-    plt.savefig(f'{folder_path}/{schedule_number}_charging_discharge_SOC.jpeg', format='jpeg', bbox_inches='tight')
+    plt.savefig(f'{folder_path}/charging_discharge_SOC.jpeg', format='jpeg', bbox_inches='tight')
     plt.show()
     
     
