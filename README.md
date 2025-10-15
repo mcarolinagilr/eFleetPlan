@@ -17,6 +17,7 @@ If you use eFleetPlan, please cite:
 
 
 ## Installation instructions
+
 **Option 1** With package folder download
 
 **Step 1.** Create a new environment using "requirements.txt" file.
@@ -24,20 +25,20 @@ For Python (Windows), run in the terminal:
 
     Python -m venv OPTI_env
     OPTI_env\Scripts\activate
-    pip install -r requirements.txt
+
+    pip install hatch
+    pip install .
 
 For  Python (macOS / Linux) run in the terminal:
 
     Python -m venv OPTI_env
     source OPTI_env/bin/activate
-    pip install -r requirements.txt
 
-**Step 2.** Install the package locally:
-After activating the environment, run:
- pip install .
+    pip install hatch
+    pip install .
 
 
-**Option 2** (Clone directly from GitHub in the command prompt)
+**Option 2** Clone directly from GitHub in the command prompt
 
 **Step 1.** Clone the repository:
     cd "[folder path where to save the program folder]"
@@ -48,23 +49,32 @@ After activating the environment, run:
     
     Python -m venv OPTI_env
     source OPTI_env/bin/activate
-    pip install -r requirements.txt
+    pip install hatch
     pip install .
 
 ## Gurobi solver instalation
 eFleetPlan requires the [Gurobi Optimizer](https://www.gurobi.com/) to solve mathematical optimization problems.
 To use the optimisation feature, you need a valid Gurobi license and installation.
 
+**Confirm everything’s correctly installed with**
+    python -m efleetplan
+
+
+**Option 3** Install package eFleetPlan
+pip install eFleetPlan
+
 
 
 ## How to use the tool
 
 ### Notebook files
-You can run eFleetTool via the provided Jupyter notebooks:
+You can run eFleetPlan Tool via the provided Jupyter notebooks:
 
-- notebooks/Module 1. Schedule Generation Module.ipynb for Module 1, to create schedules for an electric LCV fleet
+- notebooks/eFleetPlan for all to generate schedulers and find the optimal infrasctructure and operation cost.
 
-- notebooks/Module 2. Co-optimisation.ipynb for Module 2, to run the optimisation model
+- notebooks/Module 1. Schedule Generation Module.ipynb for Module 1, to create schedules for an electric LCV fleet.
+
+- notebooks/Module 2. Co-optimisation.ipynb for Module 2, to run the optimisation model.
 
 **Steps**
 1. Install the project dependencies and launch Jupyter (e.g., `jupyter lab` or `jupyter notebook`).
@@ -72,7 +82,7 @@ You can run eFleetTool via the provided Jupyter notebooks:
 3. Execute the cells from top to bottom, adjusting the configuration sections as needed.
 
 
-### Configurations
+### eFleetPlan Configurations
 The software configuration has five sections for schedule generation and optimization:
 
 1.1 Schedule generator configurations: Define the parameters required to generate the travel and charging patterns for each vehicle in the LCV fleet.
