@@ -144,6 +144,7 @@ def graph_vehicles(file_path, n_days, n_vehicles):
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.margins(x=0.01)
+        ax.set_ylim(0, 30)
         # Add secondary axis for Storage Level
         ax2 = ax.twinx()
         ax2.plot(vehicle_data['TimeIndex'], vehicle_data['Storage Level'], label='SOC', linewidth=1.5, color='green', linestyle='dashed')
@@ -232,7 +233,7 @@ def graph_number_of_chargers_by_schedules(folder_path, files_hourly_max):
         kind='bar', 
         figsize=(10, 6),
         width=0.7,
-        color=[ '#4A7C59','#4682B4', 'Chocolate']
+        color=[ "#7DE19B","#04643F", "#9D6402"]
     )
 
     rcParams['font.family'] = 'Times New Roman'
@@ -243,6 +244,7 @@ def graph_number_of_chargers_by_schedules(folder_path, files_hourly_max):
     ax.set_xlabel('Schedule profiles', fontsize=20)
     ax.set_yticks(range(0, int(df_max_values[['Slow Charging', 'Fast Charging', 'Route Charging']].values.max()) + 1, 1))
     ax.set_ylabel('Number of chargers', fontsize=20)
+    ax.set_ylim(0,30)
 
     # Set x-axis tick labels explicitly
     ax.set_xticks(range(len(df_max_values['File'])))
@@ -253,12 +255,15 @@ def graph_number_of_chargers_by_schedules(folder_path, files_hourly_max):
     ax.grid(True, which='both', axis='y', linestyle='--')
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-
     plt.tight_layout()
 
     # Save the plot as a JPG file
     plt.savefig(f'{folder_path}/Total_chargers_by_schedules.jpg', format='jpeg')
     plt.show()
+
+    fig=plt.gcf()
+
+    return ax, fig
 
 
 def graph_chargingpower (file_path, folder_path):
@@ -276,7 +281,7 @@ def graph_chargingpower (file_path, folder_path):
         x = df_mean['Hour']
     else:
         x = np.arange(len(df_mean))
-    ax1.bar(x, df_mean['Charging power'], width=bar_width, alpha=0.7, label='Charging Power')
+    ax1.bar(x, df_mean['Charging power'], width=bar_width, alpha=0.7, label='Charging Power', color= "#04643F")
     ax1.set_xlabel('Hour', fontsize=20)
     ax1.set_ylabel('Power (kWh)', fontsize=20, color='black')
     ax1.tick_params(axis='x', labelsize=14, color='black')
@@ -285,6 +290,7 @@ def graph_chargingpower (file_path, folder_path):
     ax1.set_xticklabels([str(h) for h in range(24)])
     ax1.spines['top'].set_visible(False)
     ax1.margins(x=0.01)
+    
 
     # Add secondary y-axis for average price per hour
     average_price_per_hour = df_mean['Price']
@@ -293,8 +299,8 @@ def graph_chargingpower (file_path, folder_path):
                             solid_joinstyle='round', solid_capstyle='round')
     ax2.set_ylabel('Average Price (SEK)', fontsize=20, color='black')
     ax2.tick_params(axis='y', labelcolor='black', labelsize=14)
-    #ax1.set_ylim(0,300)
-    #ax2.set_ylim(0, 140)
+    ax1.set_ylim(0,300)
+    ax2.set_ylim(0, 1)
     ax1.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
     #ax2.set_yticks(range(0, 900, 100))  # Adjust range as needed
     ax2.spines['top'].set_visible(False)  # Remove the top axis line for ax1
@@ -335,9 +341,9 @@ def graph_powerbytype (file_path, folder_path):
     bar2 = x
     bar3 = x + bar_width
     
-    ax1.bar(bar1, slow_charging, width=bar_width, alpha=0.7, label='Slow Charging Hourly', color='#4A7C59')
-    ax1.bar(bar2, fast_charging, width=bar_width, alpha=0.7, label='Fast Charging Hourly', color='#4682B4')
-    ax1.bar(bar3, route_charging, width=bar_width, alpha=0.7, label='Route Charging Hourly', color='Chocolate')
+    ax1.bar(bar1, slow_charging, width=bar_width, alpha=0.7, label='Slow Charging Hourly', color= "#7DE19B")
+    ax1.bar(bar2, fast_charging, width=bar_width, alpha=0.7, label='Fast Charging Hourly', color="#04643F")
+    ax1.bar(bar3, route_charging, width=bar_width, alpha=0.7, label='Route Charging Hourly', color="#9D6402")
     ax1.set_xlabel('Hour', fontsize=20)
     ax1.set_ylabel('Power (kWh)', fontsize=20, color='black')
     ax1.tick_params(axis='x', labelsize=14, color='black')
@@ -354,8 +360,8 @@ def graph_powerbytype (file_path, folder_path):
                             solid_joinstyle='round', solid_capstyle='round')
     ax2.set_ylabel('Average Price (SEK)', fontsize=20, color='black')
     ax2.tick_params(axis='y', labelcolor='black', labelsize=14)
-    #ax1.set_ylim(0,300)
-    #ax2.set_ylim(0, 140)
+    ax1.set_ylim(0,300)
+    ax2.set_ylim(0, 1)
     ax1.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
     #ax2.set_yticks(range(0, 900, 100))  # Adjust range as needed
     ax2.spines['top'].set_visible(False)  # Remove the top axis line for ax1
@@ -371,3 +377,5 @@ def graph_powerbytype (file_path, folder_path):
     plt.savefig(f'{folder_path}/EVChargers_chargingpowerbytype.jpg', 
                                     format='jpeg', bbox_inches='tight')
     plt.show()
+
+    return ax1, ax2

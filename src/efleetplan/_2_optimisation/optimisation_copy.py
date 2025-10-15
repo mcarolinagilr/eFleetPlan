@@ -325,12 +325,19 @@ def optimisation(opt_config, cost_config, power_config):
 
     m.detect_disconnection = pyo.Constraint(m.b, m.t, rule=Detect_Disconnection)
 
-    # Require minimum SOC when disconnecting
     def Min_SOC_On_Disconnection(m, b, t):
         if t > 1:
-            return m.Storage_level[b, t-1] >= (
-                Battery_LimitMax * Battery_Limitation[b] * m.Disconnection[b, t]  # Ensure that SOC is equal to Battery maximum limit if disconnected
-            )
+            hour_of_day = (t - 1) % 24
+            
+            # Only apply during night hours (e.g., 11 PM to 6 AM)
+            is_night = hour_of_day >= 16 or hour_of_day < 10
+            
+            if is_night:
+                return m.Storage_level[b, t-1] >= (
+                    Battery_LimitMax * Battery_Limitation[b] * m.Disconnection[b, t]
+                )
+            else:
+                return pyo.Constraint.Skip
         return pyo.Constraint.Skip
 
     m.min_soc_disconnection = pyo.Constraint(m.b, m.t, rule=Min_SOC_On_Disconnection)
@@ -511,7 +518,7 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
         writer.writerow({'Category': 'Route CS', 'Description': 'Electricity Cost', 'Value': sum(pyo.value(m.Charge_hourly_Route[b, t]) * Price_FixedrateRoute for b in m.b for t in m.t)})
 
     # 3. EV descriptive file
-    with open(csv_file_pathD, 'w', newline='', encoding='utf-8') as file:
+    with open(csv_file_pathD,  mode='w', newline='') as file:
         writer = csv.writer(file)
 
         header = [

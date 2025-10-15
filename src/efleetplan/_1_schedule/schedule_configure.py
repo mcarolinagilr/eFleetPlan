@@ -77,6 +77,8 @@ class ScheduleConfig:
             self.pause_end_dev = 0.25  # std dev pause end weekday
             self.max_beg_time = 13
             self.min_beg_time = 11
+            self.max_pause_end = 15
+            self.min_pause_end = 12
             
             self.pause_time_mean = 0.5
             self.pause_time_dev = 0.1

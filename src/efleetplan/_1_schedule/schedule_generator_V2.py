@@ -502,17 +502,13 @@ class ScheduleGenerator:
 
                 # dividing the total distance into equal parts
                 ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = Distance_first_trip/ first_trip_hours
+                consumption_rate_first = self.consumption_rate(Distance_first_trip)
 
-                consumption_rate = max([np.random.normal(self.vc.consumption_mean, self.vc.consumption_std), self.vc.consumption_min])
-                
-                # Clipping to max
-                consumption_rate = min([consumption_rate, self.vc.consumption_max])
-                # Clipping such that the maximum amount of energy per trip is not exceeded
-                consumption_rate = min([consumption_rate, self.vc.total_cons_clip / total_distance])
-                consumption_factor = self.consumption_factor (step)
+                consumption_factor = self.consumption_factor(step)
+   
 
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (Distance_first_trip / first_trip_hours) * consumption_rate * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_rate_corrected"] = consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (Distance_first_trip / first_trip_hours) * consumption_rate_first * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_rate_corrected"] = consumption_rate_first * consumption_factor
 
                 # set relevant entries
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
@@ -524,17 +520,12 @@ class ScheduleGenerator:
             elif (step >= pause_end_date) and (step < ret_date):
                 # dividing the total distance into equal parts
                 ev_schedule.loc[ev_schedule["date"] == step, "Distance_km"] = Distance_second_trip / second_trip_hours
+                consumption_rate_second = self.consumption_rate(Distance_second_trip)
 
-                consumption_rate = max([np.random.normal(self.vc.consumption_mean, self.vc.consumption_std),
-                                   self.vc.consumption_min])
-                # Clipping to max
-                consumption_rate = min([consumption_rate, self.vc.consumption_max])
-                # Clipping such that the maximum amount of energy per trip is not exceeded
-                consumption_rate = min([consumption_rate, self.vc.total_cons_clip_afternoon / total_distance])
-                consumption_factor = self.consumption_factor (step)
+                consumption_factor = self.consumption_factor(step)
 
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (Distance_second_trip / second_trip_hours) * consumption_rate * consumption_factor
-                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_rate_corrected"] = consumption_rate * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_kWh"] = (Distance_second_trip / second_trip_hours) * consumption_rate_second * consumption_factor
+                ev_schedule.loc[ev_schedule["date"] == step, "Consumption_rate_corrected"] = consumption_rate_second * consumption_factor
 
                 # set relevant entries
                 ev_schedule.loc[ev_schedule["date"] == step, "Location"] = 0
