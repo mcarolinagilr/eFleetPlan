@@ -308,33 +308,7 @@ def optimisation(opt_config, cost_config, power_config):
             return m.Battery_Cycles[b, t] == (Ch_losses * m.Charge_hourly[b, t]) / Battery_Limitation[b]
     m.Battery_Cycles_Hourly = pyo.Constraint(m.b, m.t, rule=Battery_Cycles)
     
-    # 3.7. Only disconnect to the charger when SOC is above a certain level
     
-    # New binary variable: 1 if vehicle disconnects at timestep t
-    m.Disconnection = pyo.Var(m.b, m.t, domain=pyo.Binary)
-
-    # Detect disconnection (charging at t-1, not charging at t)
-    def Detect_Disconnection(m, b, t):
-        if t > 1:
-            was_charging = m.Charging_slow[b, t-1] + sum(m.Charging_fast[b, t-1, f] for f in m.f) #identify if was charging at t-1
-            is_charging = m.Charging_slow[b, t] + sum(m.Charging_fast[b, t, f] for f in m.f) #identify if is charging at t
-            
-            # Disconnect = 1 only if was_charging=1 AND is_charging=0
-            return m.Disconnection[b, t] >= was_charging - is_charging
-        return pyo.Constraint.Skip
-
-    m.detect_disconnection = pyo.Constraint(m.b, m.t, rule=Detect_Disconnection)
-
-    # Require minimum SOC when disconnecting
-    def Min_SOC_On_Disconnection(m, b, t):
-        if t > 1:
-            return m.Storage_level[b, t-1] >= (
-                Battery_LimitMax * Battery_Limitation[b] * m.Disconnection[b, t]  # Ensure that SOC is equal to Battery maximum limit if disconnected
-            )
-        return pyo.Constraint.Skip
-
-    m.min_soc_disconnection = pyo.Constraint(m.b, m.t, rule=Min_SOC_On_Disconnection)
-
     # Objective Function
     def ObjectiveFunction(m):
         return (
@@ -358,22 +332,22 @@ def optimisation(opt_config, cost_config, power_config):
 
     solver.options['MIPGap'] = 0.25
     solver.options['ScaleFlag'] = 2
-    solver.options['LogFile'] = "gurobi_log2.txt"
+    solver.options['LogFile'] = "gurobi_log_V2.txt"
 
     # Speed vs determinism balance
-    solver.options['Threads'] = 4                 # Half threads (50% speed boost)
+    solver.options['Threads'] = 8                 # Half threads (50% speed boost)
     solver.options['Seed'] = 42                   # Fixed seed for some reproducibility
     solver.options['Method'] = 2                  # Deterministic barrier method
-    solver.options['Presolve'] = 1                # Keep presolve for speed
-    solver.options['NodeMethod'] = 2              # Deterministic node method
+    solver.options['Presolve'] = 2                # Keep presolve for speed
+    solver.options['NodeMethod'] = 3              # Deterministic node method
 
     # Conservative optimizations
-    solver.options['Cuts'] = 1                    # Conservative cuts (not 0)
-    solver.options['Heuristics'] = 0.1            # Limited heuristics (not 0.0)
+    solver.options['Cuts'] = -1                    # Conservative cuts (not 0)
+    solver.options['Heuristics'] = 0.3            # Limited heuristics (not 0.0)
 
     # Safety limits
-    solver.options['TimeLimit'] = 3600            # 1 hour limit per job
-    solver.options['MIPFocus'] = 1  
+    #solver.options['TimeLimit'] = 3600            # 1 hour limit per job
+    solver.options['MIPFocus'] = 3  
     
     # Debug: Print all solver options being used
     print("=== SOLVER CONFIGURATION ===")
@@ -511,7 +485,7 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
         writer.writerow({'Category': 'Route CS', 'Description': 'Electricity Cost', 'Value': sum(pyo.value(m.Charge_hourly_Route[b, t]) * Price_FixedrateRoute for b in m.b for t in m.t)})
 
     # 3. EV descriptive file
-    with open(csv_file_pathD, 'w', newline='', encoding='utf-8') as file:
+    with open(csv_file_pathD,  mode='w', newline='') as file:
         writer = csv.writer(file)
 
         header = [

@@ -102,15 +102,17 @@ def plot_summary_table(file_path):
         plt.show()
     
     
-def graph_vehicles(file_path, n_days, n_vehicles):
-    df = pd.read_csv(file_path, encoding='utf-8-sig')
+def graph_vehicles(schedule_name, file_path, n_days, n_vehicles):
+
+    project_root= os.path.abspath(os.path.join(os.getcwd(), '..'))
+    df = pd.read_csv(file_path)
 
     # Font setup
     rcParams['font.family'] = 'Times New Roman'
     rcParams['font.size'] = 16
 
     # Create a subplot for each vehicle
-    fig, axs = plt.subplots(nrows=n_vehicles, ncols=1, figsize=(18, 3 * n_vehicles + 2), sharex=True)
+    fig, axs = plt.subplots(nrows=n_vehicles, ncols=1, figsize=(16, 3 * n_vehicles + 2), sharex=True)
     fig.subplots_adjust(hspace=0.6)
 
     # Ensure axs is always an array for consistent indexing
@@ -155,14 +157,15 @@ def graph_vehicles(file_path, n_days, n_vehicles):
 
         # Show x-tick labels on all subplots
         ax.set_xticks(hour_ticks)
-        ax.set_xticklabels(hour_labels[:len(hour_ticks)], rotation=90, fontsize=12)
+        ax.set_xticklabels(hour_labels[:len(hour_ticks)], rotation=90, fontsize=14)  # Increased fontsize here
         ax.tick_params(axis='x', labelbottom=True)
+        ax.set_xlabel('Hours', fontsize=16)  # Added bigger xlabel
 
         # Add legend only to the first plot
-        if i == 0:
-            lines, labels = ax.get_legend_handles_labels()
-            lines2, labels2 = ax2.get_legend_handles_labels()
-            ax.legend(lines + lines2, labels + labels2, loc='upper right', bbox_to_anchor=(1, 1.5), ncol=2, frameon=True, fontsize=14)
+        #if i == 0:
+            #lines, labels = ax.get_legend_handles_labels()
+            #lines2, labels2 = ax2.get_legend_handles_labels()
+            #ax.legend(lines + lines2, labels + labels2, loc='upper right', bbox_to_anchor=(1, 1.5), ncol=2, frameon=False, fontsize=14)
 
     # Top axis (Day labels) on first subplot
     ax_top = axs[0].twiny()
@@ -175,15 +178,15 @@ def graph_vehicles(file_path, n_days, n_vehicles):
     ax_top.grid(True, axis='x', linestyle='dashed', linewidth=0.5, color='black')
 
     # Title and save
-    fig.suptitle('Charging and discharging power and SOC per vehicle', fontsize=20, y=0.99)
+    fig.suptitle('Charging and Discharging Power and SOC per Vehicle (Week 1)', fontsize=16, y=0.99)
     plt.tight_layout()
 
-    plt.savefig(f'{folder_path}/{schedule_number}_charging_discharge_SOC.jpeg', format='jpeg', bbox_inches='tight')
+    plt.savefig(os.path.join(project_root, 'data', 'Output', f'{schedule_name}', 'Results', 'Hourly_vehicle_charging_discharging.jpg'), format='jpeg', bbox_inches='tight', dpi=1000)
     plt.show()
     
     
 def graph_number_of_chargers_by_schedules(folder_path, files_hourly_max):
-    """    Graphs the total number of chargers by type of charging for each schedule profile. """  
+    """Graphs the total number of chargers by type of charging for each schedule profile."""
     
     # Initialize lists to store the maximum values
     max_slow_charging = []
@@ -193,11 +196,13 @@ def graph_number_of_chargers_by_schedules(folder_path, files_hourly_max):
 
     # Process each file
     for file in files_hourly_max:
-        
         # Extract the schedule number and map it to the name
-        schedule_number = int(os.path.basename(file).split('_')[0])  # Extract "Schedule_X" and convert to integer
-        print(schedule_number)
-        #schedule_name = schedule_name_mapping.get(schedule_number, schedule_number)  # Default to schedule_number if not in mapping
+        schedule_number = int(os.path.basename(file).split('_')[0])  # Extract schedule number
+        schedule_name_mapping = {1: "Company A", 2: "Company B", 3: "Company C", 4: "Company D"}
+        schedule_name = schedule_name_mapping.get(schedule_number, f"Schedule {schedule_number}")
+        print(schedule_number, schedule_name)
+        
+        schedule_name = schedule_name_mapping.get(schedule_number, schedule_number)  # Default to schedule_number if not in mapping
         
         # Read the CSV file into a DataFrame
         df_hourly_max = pd.read_csv(file)
@@ -216,7 +221,6 @@ def graph_number_of_chargers_by_schedules(folder_path, files_hourly_max):
         max_fast_charging.append(fast_charging)
         max_route_charging.append(route_charging)
         file_names.append(schedule_number)  # Original file name
-        #mapped_names.append(schedule_name)  # Mapped name
 
     # Create a DataFrame for plotting using mapped names
     df_max_values = pd.DataFrame({
@@ -231,26 +235,20 @@ def graph_number_of_chargers_by_schedules(folder_path, files_hourly_max):
         x='File', 
         y=['Slow Charging','Fast Charging','Route Charging'], 
         kind='bar', 
-        figsize=(10, 6),
+        figsize=(8, 6),
         width=0.7,
-        color=[ "#7DE19B","#04643F", "#9D6402"]
+        color=[ "#7DE19B","#04643F", "#9D6402"],
+        legend=False  # Disable legend
     )
 
     rcParams['font.family'] = 'Times New Roman'
-    rcParams['font.size'] = 16
+    rcParams['font.size'] = 18
 
-    # Your plot
-    #ax.set_title('Total number of chargers by Type of Charging', fontsize=24, pad=30)
-    ax.set_xlabel('Schedule profiles', fontsize=20)
+    ax.set_xticklabels([schedule_name_mapping.get(num, f"Schedule {num}") for num in df_max_values['File']], rotation=0, fontsize=18)
     ax.set_yticks(range(0, int(df_max_values[['Slow Charging', 'Fast Charging', 'Route Charging']].values.max()) + 1, 1))
     ax.set_ylabel('Number of chargers', fontsize=20)
     ax.set_ylim(0,30)
-
-    # Set x-axis tick labels explicitly
     ax.set_xticks(range(len(df_max_values['File'])))
-
-
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3, framealpha=0, prop={'size': 16})
     ax.yaxis.set_major_locator(plt.MultipleLocator(2))  # Set y-axis grid/ticks every 2 units
     ax.grid(True, which='both', axis='y', linestyle='--')
     ax.spines['top'].set_visible(False)
@@ -258,10 +256,10 @@ def graph_number_of_chargers_by_schedules(folder_path, files_hourly_max):
     plt.tight_layout()
 
     # Save the plot as a JPG file
-    plt.savefig(f'{folder_path}/Total_chargers_by_schedules.jpg', format='jpeg')
+    plt.savefig(f'{folder_path}/Total_chargers_by_schedules.jpg', format='jpeg', dpi=600)
     plt.show()
 
-    fig=plt.gcf()
+    fig = plt.gcf()
 
     return ax, fig
 
@@ -284,8 +282,8 @@ def graph_chargingpower (file_path, folder_path):
     ax1.bar(x, df_mean['Charging power'], width=bar_width, alpha=0.7, label='Charging Power', color= "#04643F")
     ax1.set_xlabel('Hour', fontsize=20)
     ax1.set_ylabel('Power (kWh)', fontsize=20, color='black')
-    ax1.tick_params(axis='x', labelsize=14, color='black')
-    ax1.tick_params(axis='y', labelsize=14, color='black')
+    ax1.tick_params(axis='x', labelsize=16, color='black')
+    ax1.tick_params(axis='y', labelsize=16, color='black')
     ax1.set_xticks(np.arange(0, 24, 1))
     ax1.set_xticklabels([str(h) for h in range(24)])
     ax1.spines['top'].set_visible(False)
@@ -298,7 +296,7 @@ def graph_chargingpower (file_path, folder_path):
     ax2.plot(average_price_per_hour, color='black', linewidth=2, alpha=0.6, label='Average Price per Hour', 
                             solid_joinstyle='round', solid_capstyle='round')
     ax2.set_ylabel('Average Price (SEK)', fontsize=20, color='black')
-    ax2.tick_params(axis='y', labelcolor='black', labelsize=14)
+    ax2.tick_params(axis='y', labelcolor='black', labelsize=16)
     ax1.set_ylim(0,300)
     ax2.set_ylim(0, 1)
     ax1.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
@@ -310,12 +308,64 @@ def graph_chargingpower (file_path, folder_path):
     plt.title('Average charging power per hour', fontsize=20, loc='center', pad=30)
 
     # Adjust legend placement to avoid overlap
-    fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0), ncol=3, framealpha=0, fontsize=16)
+    #fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0), ncol=3, framealpha=0, fontsize=18)
 
     # Save the figure
     plt.savefig(f'{folder_path}/NumberEVChargers_perchargingpower.jpg', 
-                                    format='jpeg', bbox_inches='tight')
+                                    format='jpeg', bbox_inches='tight', dpi=600)
     plt.show()
+
+
+def graph_route_charging_power(file_path, folder_path):
+    df_mean = pd.read_csv(file_path)
+
+    # Define bar positions
+    bar_width = 0.25
+
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+
+    # Assume df_mean has an 'Hour' column from 0 to 23 or index 0 to 23
+    if 'Hour' in df_mean.columns:
+        x = df_mean['Hour']
+    else:
+        x = np.arange(len(df_mean))
+
+    # Only plot route charging power
+    route_charging = df_mean.get('Route Charging Hourly', pd.Series([0]*len(x)))
+    ax1.bar(x, route_charging, width=bar_width, alpha=0.7, label='Route Charging Power', color="#9D6402")
+    ax1.set_xlabel('Hour', fontsize=20)
+    ax1.set_ylabel('Power (kWh)', fontsize=20, color='black')
+    ax1.tick_params(axis='x', labelsize=16, color='black')
+    ax1.tick_params(axis='y', labelsize=16, color='black')
+    ax1.set_xticks(np.arange(0, 24, 1))
+    ax1.set_xticklabels([str(h) for h in range(24)])
+    ax1.spines['top'].set_visible(False)
+    ax1.margins(x=0.01)
+
+    # Add secondary y-axis for average price per hour
+    average_price_per_hour = df_mean['Price']
+    ax2 = ax1.twinx()
+    ax2.plot(average_price_per_hour, color='black', linewidth=2, alpha=0.6, label='Average Price per Hour',
+                 solid_joinstyle='round', solid_capstyle='round')
+    ax2.set_ylabel('Average Price (SEK)', fontsize=20, color='black')
+    ax2.tick_params(axis='y', labelcolor='black', labelsize=16)
+    ax1.set_ylim(0, 300)
+    ax2.set_ylim(0, 1)
+    ax1.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
+    ax2.spines['top'].set_visible(False)
+    ax2.margins(x=0.01)
+
+    # Title and Legend
+    plt.title('Average route charging power per hour', fontsize=20, loc='center', pad=30)
+
+    # Adjust legend placement to avoid overlap
+    #fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0), ncol=2, framealpha=0, fontsize=18)
+
+    # Save the figure
+    plt.savefig(f'{folder_path}/RouteChargingPower_perhour.jpg',
+                    format='jpeg', bbox_inches='tight', dpi=600)
+    plt.show()
+
 
 
 def graph_powerbytype (file_path, folder_path):
@@ -340,14 +390,21 @@ def graph_powerbytype (file_path, folder_path):
     bar1 = x - bar_width
     bar2 = x
     bar3 = x + bar_width
-    
-    ax1.bar(bar1, slow_charging, width=bar_width, alpha=0.7, label='Slow Charging Hourly', color= "#7DE19B")
+    # Ensure all types are represented, even if missing in the DataFrame
+    slow_charging = df_mean.get('Slow Charging Hourly', pd.Series([0]*len(x)))
+    fast_charging_50 = df_mean.get('Fast Charging Hourly 50kW', pd.Series([0]*len(x)))
+    fast_charging_150 = df_mean.get('Fast Charging Hourly 150kW', pd.Series([0]*len(x)))
+    fast_charging_350 = df_mean.get('Fast Charging Hourly 350kW', pd.Series([0]*len(x)))
+    fast_charging = fast_charging_50 + fast_charging_150 + fast_charging_350
+    route_charging = df_mean.get('Route Charging Hourly', pd.Series([0]*len(x)))
+
+    ax1.bar(bar1, slow_charging, width=bar_width, alpha=0.7, label='Slow Charging Hourly', color="#7DE19B")
     ax1.bar(bar2, fast_charging, width=bar_width, alpha=0.7, label='Fast Charging Hourly', color="#04643F")
     ax1.bar(bar3, route_charging, width=bar_width, alpha=0.7, label='Route Charging Hourly', color="#9D6402")
     ax1.set_xlabel('Hour', fontsize=20)
     ax1.set_ylabel('Power (kWh)', fontsize=20, color='black')
-    ax1.tick_params(axis='x', labelsize=14, color='black')
-    ax1.tick_params(axis='y', labelsize=14, color='black')
+    ax1.tick_params(axis='x', labelsize=16, color='black')
+    ax1.tick_params(axis='y', labelsize=16, color='black')
     ax1.set_xticks(np.arange(0, 24, 1))
     ax1.set_xticklabels([str(h) for h in range(24)])
     ax1.spines['top'].set_visible(False)
@@ -359,7 +416,7 @@ def graph_powerbytype (file_path, folder_path):
     ax2.plot(average_price_per_hour, color='black', linewidth=2, alpha=0.6, label='Average Price per Hour', 
                             solid_joinstyle='round', solid_capstyle='round')
     ax2.set_ylabel('Average Price (SEK)', fontsize=20, color='black')
-    ax2.tick_params(axis='y', labelcolor='black', labelsize=14)
+    ax2.tick_params(axis='y', labelcolor='black', labelsize=16)
     ax1.set_ylim(0,300)
     ax2.set_ylim(0, 1)
     ax1.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
@@ -371,11 +428,11 @@ def graph_powerbytype (file_path, folder_path):
     plt.title('Average charging power per hour by type of charger', fontsize=20, loc='center', pad=30)
 
     # Adjust legend placement to avoid overlap
-    fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0), ncol=3, framealpha=0, fontsize=16)
+    #fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0), ncol=3, framealpha=0, fontsize=18)
 
-    # Save the figure
+    # Save the figure with higher quality (600 dpi)
     plt.savefig(f'{folder_path}/EVChargers_chargingpowerbytype.jpg', 
-                                    format='jpeg', bbox_inches='tight')
+                format='jpeg', bbox_inches='tight', dpi=600)
     plt.show()
 
     return ax1, ax2
