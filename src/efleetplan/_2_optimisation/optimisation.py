@@ -39,7 +39,7 @@ def assign(opt_config):
     Ev_distance = opt_config["Ev_distance"]
     Ev_availability_file = opt_config["Ev_availability_file"]
     Battery_Limitation = opt_config["Battery_Limitation"]
-    
+    PowerRate_Limitation = opt_config["PowerRate_Limitation"]
 
     # Electricity price file (the example uses value from SE3 in stockholm, Sweden in krs/kWh)
     electricity_price_grid = pd.read_csv(os.path.join(input_folder, 'SE3_el_prices_2023_modified.csv'))
@@ -66,7 +66,7 @@ def assign(opt_config):
     Ev_distance.index = pd.date_range(start=start_date, periods=len(Ev_distance), freq='h')
     En_consumption.index = pd.date_range(start=start_date, periods=len(En_consumption), freq='h')
     Battery_Limitation.index = pd.date_range(start=start_date, periods=len(Battery_Limitation), freq='h')
-    
+    PowerRate_Limitation.index = pd.date_range(start=start_date, periods=len(PowerRate_Limitation), freq='h')
 
     # Filter the data between the specified dates
     filtered_price_data = Price_data[(Price_data.index >= start_date) & (Price_data.index <= end_date)]
@@ -74,6 +74,7 @@ def assign(opt_config):
     filtered_ev_distance = Ev_distance[(Ev_distance.index >= start_date) & (Ev_distance.index <= end_date)]
     filtered_energy_consumption = En_consumption[(En_consumption.index >= start_date) & (En_consumption.index <= end_date)]
     filtered_Battery_Limitation = Battery_Limitation[(Battery_Limitation.index >= start_date) & (Battery_Limitation.index <= end_date)]
+    filtered_PowerRate_Limitation = PowerRate_Limitation[(PowerRate_Limitation.index >= start_date) & (PowerRate_Limitation.index <= end_date)]
 
     # Check if the filtered data is not empty
     #if filtered_price_data.empty or filtered_ev_availability.empty or filtered_ev_distance.empty or filtered_energy_consumption.empty or filtered_Battery_Limitation.empty:
@@ -87,6 +88,7 @@ def assign(opt_config):
     
     # Precompute the maximum battery limitation for each EV
     Battery_Limitation = {b: filtered_Battery_Limitation.iloc[:, b].max() for b in range(1, EVs + 1)}
+    PowerRate_Limitation = {b: filtered_PowerRate_Limitation.iloc[:, b].max() for b in range(1, EVs + 1)}
 
     # Fill the Price dictionary with the filtered data
     for t in range(1, len(filtered_price_data) + 1):
@@ -100,6 +102,7 @@ def assign(opt_config):
         
         # Precompute the max battery limitation for this EV
         max_battery_limit = Battery_Limitation[y]
+        max_power_rate_limit = PowerRate_Limitation[y]
         
         # Loop over time (hours)
         for t in range(1, len(filtered_price_data) + 1):
@@ -107,16 +110,17 @@ def assign(opt_config):
             Distance_km[y, t] = Distance_km_EVs.iloc[t - 1]
             Energy_Consumption_km[y, t] = Energy_Consumption.iloc[t - 1]
             Battery_Limitation[y, t] = max_battery_limit
+            PowerRate_Limitation[y, t] = max_power_rate_limit
     
                           
-    return EV_availability, Distance_km, Energy_Consumption_km, Price, Battery_Limitation, days, EVs
+    return EV_availability, Distance_km, Energy_Consumption_km, Price, Battery_Limitation, PowerRate_Limitation, days, EVs
 
-    
+
 
 def optimisation(opt_config, cost_config, power_config):
     
     # Funtion to assign the data to the optimisation module
-    EV_availability, Distance_km, Energy_Consumption_km, Price, Battery_Limitation, days, EVs = assign(opt_config)
+    EV_availability, Distance_km, Energy_Consumption_km, Price, Battery_Limitation, PowerRate_Limitation, days, EVs = assign(opt_config)
     
     # Convert all data to float format
     EV_availability = {k: int(v) for k, v in EV_availability.items()}
@@ -124,6 +128,7 @@ def optimisation(opt_config, cost_config, power_config):
     Energy_Consumption_km = {k: float(v) for k, v in Energy_Consumption_km.items()}
     Price = {k: float(v) for k, v in Price.items()}
     Battery_Limitation = {k: float(v) for k, v in Battery_Limitation.items()}
+    PowerRate_Limitation = {k: float(v) for k, v in PowerRate_Limitation.items()}
     days = int(days)
     EVs = int(EVs)
     Battery_LimitMax = power_config["Battery_Maximum Limit"]  # Maximum battery limit
@@ -200,7 +205,15 @@ def optimisation(opt_config, cost_config, power_config):
     m.Charging_Route = pyo.Var(m.b, m.t, within=pyo.Binary)  # Decision Variable
     
     m.Battery_Cycles = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)
+    m.PowerRate_Limitation = pyo.Param(m.b, initialize=lambda model, b: PowerRate_Limitation[b], within=pyo.NonNegativeReals)
     
+    # Power rate variables with bounds
+    m.PowerRate_slow = pyo.Var(m.b, bounds=lambda m, b: (0, min(Charger_Power['s'], m.PowerRate_Limitation[b])))
+    m.PowerRate_fast_f1 = pyo.Var(m.b, bounds=lambda m, b: (0, min(Charger_Power['f1'], m.PowerRate_Limitation[b])))
+    m.PowerRate_fast_f2 = pyo.Var(m.b, bounds=lambda m, b: (0, min(Charger_Power['f2'], m.PowerRate_Limitation[b])))
+    m.PowerRate_fast_f3 = pyo.Var(m.b, bounds=lambda m, b: (0, min(Charger_Power['f3'], m.PowerRate_Limitation[b])))
+    m.PowerRate_Route = pyo.Var(m.b, bounds=lambda m, b: (0, min(Charger_Power['Route'], m.PowerRate_Limitation[b])))
+  
         
     # Variables for objective
     m.Max_Power = pyo.Var(within=pyo.NonNegativeReals)
@@ -225,25 +238,25 @@ def optimisation(opt_config, cost_config, power_config):
     
     # 1.3. Constraints in slow charging - Define maximum hourly charging with Slow C (Eq4)
     def Charge_Hourly_Slow(m, b, t):
-        return m.Charge_hourly_slow[b, t] <= Charger_Power['s'] * m.Charging_slow[b, t] * EV_availability[b, t]
+        return m.Charge_hourly_slow[b, t] <= m.PowerRate_slow[b] * m.Charging_slow[b, t] * EV_availability[b, t]
     m.charge_hourly_slow = pyo.Constraint(m.b, m.t, rule=Charge_Hourly_Slow)
     
     # 1.4. Constraints in fast charging - Define maximum hourly charging with Fast C (Eq5)
     def Charge_Hourly_Fast_f1(m, b, t):
-        return m.Charge_hourly_fast_f1[b, t] <= Charger_Power['f1'] * m.Charging_fast_f1[b, t] * EV_availability[b, t]
+        return m.Charge_hourly_fast_f1[b, t] <= m.PowerRate_fast_f1[b] * m.Charging_fast_f1[b, t] * EV_availability[b, t]
     m.charge_hourly_fast_f1 = pyo.Constraint(m.b, m.t, rule=Charge_Hourly_Fast_f1)
 
     def Charge_Hourly_Fast_f2(m, b, t):
-        return m.Charge_hourly_fast_f2[b, t] <= Charger_Power['f2'] * m.Charging_fast_f2[b, t] * EV_availability[b, t]
+        return m.Charge_hourly_fast_f2[b, t] <= m.PowerRate_fast_f2[b] * m.Charging_fast_f2[b, t] * EV_availability[b, t]
     m.charge_hourly_fast_f2 = pyo.Constraint(m.b, m.t, rule=Charge_Hourly_Fast_f2)
 
     def Charge_Hourly_Fast_f3(m, b, t):
-        return m.Charge_hourly_fast_f3[b, t] <= Charger_Power['f3'] * m.Charging_fast_f3[b, t] * EV_availability[b, t]
+        return m.Charge_hourly_fast_f3[b, t] <= m.PowerRate_fast_f3[b] * m.Charging_fast_f3[b, t] * EV_availability[b, t]
     m.charge_hourly_fast_f3 = pyo.Constraint(m.b, m.t, rule=Charge_Hourly_Fast_f3)
     
     # 1.5. Constraints a maximum allowed route charging for each timesetp and vehicle (Eq6) 
     def Route_Charging(m, b, t):
-        return m.Charge_hourly_Route[b, t] <= Charger_Power['Route'] * m.Charging_Route[b, t] * (1 - EV_availability[b, t])
+        return m.Charge_hourly_Route[b, t] <= m.PowerRate_Route[b] * m.Charging_Route[b, t] * (1 - EV_availability[b, t])
     m.route_charging = pyo.Constraint(m.b, m.t, rule=Route_Charging)    
     
      # 1.6. Charging power in the distribution terminal by vehicle (v) and time (t) - (eq7)
@@ -277,10 +290,7 @@ def optimisation(opt_config, cost_config, power_config):
         return m.CS_fast_f3 >= sum(m.Charging_fast_f3[b, t] for b in m.b)
     m.balance_cs_fast_f3 = pyo.Constraint(m.t, rule=Balance_CS_Fast_F3)
     
-    #def Balance_CS_Fast(m, t, f):
-        #return m.CS_fast[f] >= sum(m.Charging_fast[b, t] for b in m.b)
-    #m.balance_cs_fast = pyo.Constraint(m.t, m.f, rule=Balance_CS_Fast)
-        
+       
     # 2.3. Define the number of Route chargers (Eq11)
     def Balance_CS_Route(m, t):
         return m.CS_Route>= sum(m.Charging_Route[b, t] for b in m.b)
@@ -363,23 +373,21 @@ def optimisation(opt_config, cost_config, power_config):
 
     # Compromise: Semi-deterministic but faster
 
-    solver.options['MIPGap'] = 0.25
+    solver.options['MIPGap'] = opt_config["MIPGap"]        # MIP optimality gap
     solver.options['ScaleFlag'] = 2
-    solver.options['LogFile'] = "gurobi_log_V2.txt"
+    solver.options['LogFile'] = "gurobi_log.txt"
 
     # Speed vs determinism balance
-    solver.options['Threads'] = 8                 # Half threads (50% speed boost)
+    solver.options['Threads'] = 8                 
     solver.options['Seed'] = 42                   # Fixed seed for some reproducibility
     solver.options['Method'] = 2                  # Deterministic barrier method
     solver.options['Presolve'] = 2                # Keep presolve for speed
     solver.options['NodeMethod'] = 3              # Deterministic node method
 
     # Conservative optimizations
-    solver.options['Cuts'] = -1                    # Conservative cuts (not 0)
+    solver.options['Cuts'] = -1                   # Conservative cuts (not 0)
     solver.options['Heuristics'] = 0.3            # Limited heuristics (not 0.0)
-
-    # Safety limits
-    #solver.options['TimeLimit'] = 3600            # 1 hour limit per job
+       
     solver.options['MIPFocus'] = 3  
     
     # Debug: Print all solver options being used

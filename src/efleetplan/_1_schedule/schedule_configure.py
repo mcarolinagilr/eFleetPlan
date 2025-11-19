@@ -131,8 +131,9 @@ class VehicleConfig:
             self.consumption_std = 0.1365  # Standard deviation of consumption in kWh/km
             self.consumption_min = 0.1  # Minimum value of consumption, used as a floor for consumption levels
             self.consumption_max = 0.45  # Maximum consumption, ceiling of consumption levels
-            self.total_cons_clip = 80  # max kWh that a trip can use #SIZE OF BATTERY???
-            self.total_cons_clip_afternoon = 80
+            self.total_cons_clip = 45  # max kWh that a trip can use in each time step
+            self.total_cons_clip_afternoon = 45  # max kWh that a trip can use in each time step
+            self.battery_capacity = 45  # Battery capacity in kWh
             self.charging_power = 80  # kW 
             
         if vehicle_type == vehicle_type.Toyota:
@@ -141,8 +142,9 @@ class VehicleConfig:
             self.consumption_std = 0.1365  # Standard deviation of consumption in kWh/km
             self.consumption_min = 0.1  # Minimum value of consumption, used as a floor for consumption levels
             self.consumption_max = 0.45  # Maximum consumption, ceiling of consumption levels
-            self.total_cons_clip = 100  # max kWh that a trip can use #SIZE OF BATTERY???
-            self.total_cons_clip_afternoon = 100           
+            self.total_cons_clip = 68 # max kWh that a trip can use in each time step
+            self.total_cons_clip_afternoon = 68 # max kWh that a trip can use in each time step        
+            self.battery_capacity = 68  # Battery capacity in kWh
             self.charging_power = 100  # kW 
             
         if vehicle_type == vehicle_type.Custom:
@@ -151,9 +153,9 @@ class VehicleConfig:
             self.consumption_std = sch_config["Custom Vehicle"]["std deviation consumption"]  # Standard deviation of consumption in kWh/km
             self.consumption_min = sch_config["Custom Vehicle"]["min consumption"]  # Minimum value of consumption, used as a floor for consumption levels
             self.consumption_max = sch_config["Custom Vehicle"]["max consumption"]  # Maximum consumption, ceiling of consumption levels
-            self.total_cons_clip = sch_config["Custom Vehicle"]["battery capacity"]  # max kWh that a trip can use #SIZE OF BATTERY???
-            self.total_cons_clip_afternoon = sch_config["Custom Vehicle"]["battery capacity"]           
-            self.charging_power = sch_config["Custom Vehicle"]["battery capacity"]  # kW
+            self.total_cons_clip = sch_config["Custom Vehicle"]["battery capacity"]  # max kWh that a trip can use in each time step
+            self.total_cons_clip_afternoon = sch_config["Custom Vehicle"]["battery capacity"] # max kWh that a trip can use in each time step          
+            self.charging_power = sch_config["Custom Vehicle"]["charging power"]  # kW
             
             
 class CompanyConfig:
