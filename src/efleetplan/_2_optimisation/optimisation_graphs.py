@@ -130,16 +130,16 @@ def graph_vehicles(folder_path, file_path, n_days, n_vehicles):
 
         ax = axs[i]
 
-        # Plot charging/discharging power
-        ax.plot(vehicle_data['TimeIndex'], vehicle_data['Charging Power'], label='Charging Power', linewidth=1.5, color='orange')
-        ax.plot(vehicle_data['TimeIndex'], vehicle_data['Discharging Power'], label='Discharging Power', linewidth=1.5)
+        # Plot charging/discharging energy
+        ax.plot(vehicle_data['TimeIndex'], vehicle_data['Charging Energy'], label='Charging Energy', linewidth=1.5, color='orange')
+        ax.plot(vehicle_data['TimeIndex'], vehicle_data['Discharging Energy'], label='Discharging Energy', linewidth=1.5)
 
         # Day separator lines
         for pos in day_positions:
             ax.axvline(x=pos, linestyle='dashed', color='gray', linewidth=0.6)
 
         # Style
-        ax.set_ylabel(f'V{vehicle_id}\nPower (kWh)', fontsize=14)
+        ax.set_ylabel(f'V{vehicle_id}\nEnergy (kWh)', fontsize=14)
         ax.grid(True, axis='y', linewidth=0.5, color='black')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
@@ -175,7 +175,7 @@ def graph_vehicles(folder_path, file_path, n_days, n_vehicles):
     ax_top.grid(True, axis='x', linestyle='dashed', linewidth=0.5, color='black')
 
     # Title and save
-    fig.suptitle('Charging and discharging power and SOC per vehicle', fontsize=20, y=0.99)
+    fig.suptitle('Charging and discharging energy and SOC per vehicle', fontsize=20, y=0.99)
     plt.tight_layout()
 
     plt.savefig(f'{folder_path}/charging_discharge_SOC.jpeg', format='jpeg', bbox_inches='tight')
@@ -266,7 +266,7 @@ def graph_number_of_chargers_by_schedules(folder_path, files_hourly_max):
     return ax, fig
 
 
-def graph_chargingpower (file_path, folder_path):
+def graph_chargingenergy (file_path, folder_path):
 
     df_mean = pd.read_csv(file_path)
 
@@ -281,9 +281,9 @@ def graph_chargingpower (file_path, folder_path):
         x = df_mean['Hour']
     else:
         x = np.arange(len(df_mean))
-    ax1.bar(x, df_mean['Charging power'], width=bar_width, alpha=0.7, label='Charging Power', color= "#04643F")
+    ax1.bar(x, df_mean['Charging energy'], width=bar_width, alpha=0.7, label='Charging Energy', color= "#04643F")
     ax1.set_xlabel('Hour', fontsize=20)
-    ax1.set_ylabel('Power (kWh)', fontsize=20, color='black')
+    ax1.set_ylabel('Energy (kWh)', fontsize=20, color='black')
     ax1.tick_params(axis='x', labelsize=14, color='black')
     ax1.tick_params(axis='y', labelsize=14, color='black')
     ax1.set_xticks(np.arange(0, 24, 1))
@@ -307,18 +307,18 @@ def graph_chargingpower (file_path, folder_path):
     ax2.margins(x=0.01)
 
     # Title and Legend
-    plt.title('Average charging power per hour', fontsize=20, loc='center', pad=30)
+    plt.title('Average charging energy per hour', fontsize=20, loc='center', pad=30)
 
     # Adjust legend placement to avoid overlap
     fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0), ncol=3, framealpha=0, fontsize=16)
 
     # Save the figure
-    plt.savefig(f'{folder_path}/NumberEVChargers_perchargingpower.jpg', 
+    plt.savefig(f'{folder_path}/NumberEVChargers_perchargingenergy.jpg', 
                                     format='jpeg', bbox_inches='tight')
     plt.show()
 
 
-def graph_powerbytype (file_path, folder_path):
+def graph_energybytype (file_path, folder_path):
     df_mean = pd.read_csv(file_path)
  
     # Define bar positions
@@ -345,7 +345,7 @@ def graph_powerbytype (file_path, folder_path):
     ax1.bar(bar2, fast_charging, width=bar_width, alpha=0.7, label='Fast Charging Hourly', color="#04643F")
     ax1.bar(bar3, route_charging, width=bar_width, alpha=0.7, label='Route Charging Hourly', color="#9D6402")
     ax1.set_xlabel('Hour', fontsize=20)
-    ax1.set_ylabel('Power (kWh)', fontsize=20, color='black')
+    ax1.set_ylabel('Energy (kWh)', fontsize=20, color='black')
     ax1.tick_params(axis='x', labelsize=14, color='black')
     ax1.tick_params(axis='y', labelsize=14, color='black')
     ax1.set_xticks(np.arange(0, 24, 1))
@@ -368,13 +368,13 @@ def graph_powerbytype (file_path, folder_path):
     ax2.margins(x=0.01)
 
     # Title and Legend
-    plt.title('Average charging power per hour by type of charger', fontsize=20, loc='center', pad=30)
+    plt.title('Average charging energy per hour by type of charger', fontsize=20, loc='center', pad=30)
 
     # Adjust legend placement to avoid overlap
     fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0), ncol=3, framealpha=0, fontsize=16)
 
     # Save the figure
-    plt.savefig(f'{folder_path}/EVChargers_chargingpowerbytype.jpg', 
+    plt.savefig(f'{folder_path}/EVChargers_chargingenergybytype.jpg', 
                                     format='jpeg', bbox_inches='tight')
     plt.show()
 

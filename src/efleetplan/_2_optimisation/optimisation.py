@@ -219,8 +219,8 @@ def optimisation(opt_config, cost_config, power_config):
     m.Max_Power = pyo.Var(within=pyo.NonNegativeReals)
   
 
-    # 1. Constraints on Charging POWER
-    # 1.1. Grid purchase is equal to hourly charge (Including losses) (Eq2)
+    # 1. Constraints on Charging energy and power
+    # 1.1. Grid energy purchase is equal to hourly charge (Including losses) (Eq2)
     def Total_Grid_Purchase(m, b, t):
         return m.Total_Grid_purchase[b, t] * Ch_losses - m.Charge_hourly[b, t] == 0
     m.total_grid_purchase = pyo.Constraint(m.b, m.t, rule=Total_Grid_Purchase)
@@ -259,7 +259,7 @@ def optimisation(opt_config, cost_config, power_config):
         return m.Charge_hourly_Route[b, t] <= m.PowerRate_Route[b] * m.Charging_Route[b, t] * (1 - EV_availability[b, t])
     m.route_charging = pyo.Constraint(m.b, m.t, rule=Route_Charging)    
     
-     # 1.6. Charging power in the distribution terminal by vehicle (v) and time (t) - (eq7)
+     # 1.6. Charging energy in the distribution terminal by vehicle (v) and time (t) - (eq7)
     def DT_Grid_Purchase(m, b, t):
         return (m.DT_Grid_purchase[b, t] * Ch_losses) - m.Charge_hourly_slow[b, t] - m.Charge_hourly_fast_f1[b, t] - m.Charge_hourly_fast_f2[b, t] - m.Charge_hourly_fast_f3[b, t] == 0
     m.DT_grid_purchase = pyo.Constraint(m.b, m.t, rule=DT_Grid_Purchase)
@@ -366,9 +366,7 @@ def optimisation(opt_config, cost_config, power_config):
         )
     m.objective = pyo.Objective(rule=ObjectiveFunction, sense=pyo.minimize)
 
-    # Solver definition
-    
-   # Solver definition - DETERMINISTIC VERSION
+    # Solver definition - DETERMINISTIC VERSION
     solver = pyo.SolverFactory('gurobi')
 
     # Compromise: Semi-deterministic but faster
@@ -464,7 +462,7 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
         data.append({
             'Date': day(t),
             'Hour': (t - 1) - (day(t) - 1) * 24,
-            'Charging power': sum(pyo.value(m.Charge_hourly[b, t]) for b in m.b),
+            'Charging energy': sum(pyo.value(m.Charge_hourly[b, t]) for b in m.b),
             'Price': Price[t],
             'Energy Purchase from grid': sum(pyo.value(m.Total_Grid_purchase[b, t]) for b in m.b),
             'Cost of energy supply from grid at DT': sum(pyo.value(m.DT_Grid_purchase[b, t] * (Price[t] + Price_FixedrateDT)) for b in m.b),
@@ -553,8 +551,8 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
         writer = csv.writer(file)
 
         header = [
-            'Day', 'Hour', 'Price', 'Vehicle ID', 'Charging Power',
-            'Discharging Power', 'Storage Level', 'Hourly Battery Cycles',
+            'Day', 'Hour', 'Price', 'Vehicle ID', 'Charging Energy',
+            'Discharging Energy', 'Storage Level', 'Hourly Battery Cycles',
             'Cost of energy supply from grid at DT', 'Cost of energy supply on route', 'EV Available',
             'Slow Charging', 'Fast Charging 50kW', 'Fast Charging 150kW',
             'Fast Charging 350kW', 'Route Charging', 'Distance travelled by hour'
