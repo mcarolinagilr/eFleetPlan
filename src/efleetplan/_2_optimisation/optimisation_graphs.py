@@ -182,7 +182,7 @@ def graph_vehicles(folder_path, file_path, n_days, n_vehicles):
     plt.show()
     
     
-def graph_number_of_chargers_by_schedules(folder_path, files_hourly_max):
+def graph_number_of_chargers_by_schedules(folder_path, files_pertime_max):
     """    Graphs the total number of chargers by type of charging for each schedule profile. """  
     
     # Initialize lists to store the maximum values
@@ -192,7 +192,7 @@ def graph_number_of_chargers_by_schedules(folder_path, files_hourly_max):
     file_names = []
 
     # Process each file
-    for file in files_hourly_max:
+    for file in files_pertime_max:
         
         # Extract the schedule number and map it to the name
         schedule_number = int(os.path.basename(file).split('_')[0])  # Extract "Schedule_X" and convert to integer
@@ -200,16 +200,16 @@ def graph_number_of_chargers_by_schedules(folder_path, files_hourly_max):
         #schedule_name = schedule_name_mapping.get(schedule_number, schedule_number)  # Default to schedule_number if not in mapping
         
         # Read the CSV file into a DataFrame
-        df_hourly_max = pd.read_csv(file)
+        df_pertime_max = pd.read_csv(file)
         
         # Calculate the maximum values for each type
-        slow_charging = df_hourly_max['EVs slow charging'].max()
+        slow_charging = df_pertime_max['EVs slow charging'].max()
         fast_charging = (
-            df_hourly_max['EVs fast charging 50kW'].max() +
-            df_hourly_max['EVs fast charging 150kW'].max() +
-            df_hourly_max['EVs fast charging 350kW'].max()
+            df_pertime_max['EVs fast charging 50kW'].max() +
+            df_pertime_max['EVs fast charging 150kW'].max() +
+            df_pertime_max['EVs fast charging 350kW'].max()
         )
-        route_charging = df_hourly_max['EVs route charging'].max()
+        route_charging = df_pertime_max['EVs route charging'].max()
         
         # Append the results to the lists
         max_slow_charging.append(slow_charging)
@@ -327,9 +327,9 @@ def graph_energybytype (file_path, folder_path):
     fig, ax1 = plt.subplots(figsize=(12, 6))
 
     # Prepare the three bar values
-    slow_charging = df_mean['Slow Charging Hourly']
-    fast_charging = (df_mean['Fast Charging Hourly 50kW'] + df_mean['Fast Charging Hourly 150kW'] + df_mean['Fast Charging Hourly 350kW'])
-    route_charging = df_mean['Route Charging Hourly']
+    slow_charging = df_mean['Slow Charging pertime']
+    fast_charging = (df_mean['Fast Charging pertime 50kW'] + df_mean['Fast Charging pertime 150kW'] + df_mean['Fast Charging pertime 350kW'])
+    route_charging = df_mean['Route Charging pertime']
     
     # Define x as the array of hour indices
     if 'Hour' in df_mean.columns:
@@ -341,9 +341,9 @@ def graph_energybytype (file_path, folder_path):
     bar2 = x
     bar3 = x + bar_width
     
-    ax1.bar(bar1, slow_charging, width=bar_width, alpha=0.7, label='Slow Charging Hourly', color= "#7DE19B")
-    ax1.bar(bar2, fast_charging, width=bar_width, alpha=0.7, label='Fast Charging Hourly', color="#04643F")
-    ax1.bar(bar3, route_charging, width=bar_width, alpha=0.7, label='Route Charging Hourly', color="#9D6402")
+    ax1.bar(bar1, slow_charging, width=bar_width, alpha=0.7, label='Slow Charging pertime', color= "#7DE19B")
+    ax1.bar(bar2, fast_charging, width=bar_width, alpha=0.7, label='Fast Charging pertime', color="#04643F")
+    ax1.bar(bar3, route_charging, width=bar_width, alpha=0.7, label='Route Charging pertime', color="#9D6402")
     ax1.set_xlabel('Hour', fontsize=20)
     ax1.set_ylabel('Energy (kWh)', fontsize=20, color='black')
     ax1.tick_params(axis='x', labelsize=14, color='black')

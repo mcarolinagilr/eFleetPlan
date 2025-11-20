@@ -131,6 +131,8 @@ def optimisation(opt_config, cost_config, power_config):
     PowerRate_Limitation = {k: float(v) for k, v in PowerRate_Limitation.items()}
     days = int(days)
     EVs = int(EVs)
+    delta_t = opt_config["delta_time"]  # Time step in hours
+    
     Battery_LimitMax = power_config["Battery_Maximum Limit"]  # Maximum battery limit
     Battery_LimitMin = power_config["Battery_Minimum Limit"]  # Minimum battery limit
     
@@ -189,14 +191,14 @@ def optimisation(opt_config, cost_config, power_config):
     m.CS_fast_f3 = pyo.Var(within=pyo.NonNegativeIntegers)
     m.CS_Route = pyo.Var(within=pyo.NonNegativeIntegers)  # Number of route charging stations (CS)
 
-    m.Charge_hourly = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Amount of charging every hour
-    m.Discharge_hourly = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Amount of discharge every hour
-    m.Charge_hourly_slow = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Amount of charge with SC every hour
-    m.Charge_hourly_fast_f1 = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Indexed by fast charging levels
-    m.Charge_hourly_fast_f2 = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Indexed by fast charging levels
-    m.Charge_hourly_fast_f3 = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Indexed by fast charging levels
-    #m.Charge_hourly_fast = pyo.Var(m.b, m.t, m.f, within=pyo.NonNegativeReals)  # Indexed by fast charging levels
-    m.Charge_hourly_Route = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Amount of route charging every hour
+    m.Charge_pertime = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Amount of charging every hour
+    m.Discharge_pertime = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Amount of discharge every hour
+    m.Charge_pertime_slow = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Amount of charge with SC every hour
+    m.Charge_pertime_fast_f1 = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Indexed by fast charging levels
+    m.Charge_pertime_fast_f2 = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Indexed by fast charging levels
+    m.Charge_pertime_fast_f3 = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Indexed by fast charging levels
+    #m.Charge_pertime_fast = pyo.Var(m.b, m.t, m.f, within=pyo.NonNegativeReals)  # Indexed by fast charging levels
+    m.Charge_pertime_Route = pyo.Var(m.b, m.t, within=pyo.NonNegativeReals)  # Amount of route charging every hour
         
     m.Charging_slow = pyo.Var(m.b, m.t, within=pyo.Binary)  # Decision Variable
     m.Charging_fast_f1 = pyo.Var(m.b, m.t, within=pyo.Binary)  # Indexed by fast charging levels
@@ -220,48 +222,48 @@ def optimisation(opt_config, cost_config, power_config):
   
 
     # 1. Constraints on Charging energy and power
-    # 1.1. Grid energy purchase is equal to hourly charge (Including losses) (Eq2)
+    # 1.1. Grid energy purchase is equal to pertime charge (Including losses) (Eq2)
     def Total_Grid_Purchase(m, b, t):
-        return m.Total_Grid_purchase[b, t] * Ch_losses - m.Charge_hourly[b, t] == 0
+        return m.Total_Grid_purchase[b, t] * Ch_losses - m.Charge_pertime[b, t] == 0
     m.total_grid_purchase = pyo.Constraint(m.b, m.t, rule=Total_Grid_Purchase)
     
-    # 1.2. Total Hourly charging is equal to SC + FC + route charging (Eq3)
-    def Sum_Total_Charge_Hourly(m, b, t):
-        return m.Charge_hourly[b, t] == (
-            m.Charge_hourly_slow[b, t]
-            + m.Charge_hourly_fast_f1[b, t]
-            + m.Charge_hourly_fast_f2 [b, t]
-            + m.Charge_hourly_fast_f3 [b, t]
-            + m.Charge_hourly_Route[b, t]
+    # 1.2. Total pertime charging is equal to SC + FC + route charging (Eq3)
+    def Sum_Total_Charge_pertime(m, b, t):
+        return m.Charge_pertime[b, t] == (
+            m.Charge_pertime_slow[b, t]
+            + m.Charge_pertime_fast_f1[b, t]
+            + m.Charge_pertime_fast_f2 [b, t]
+            + m.Charge_pertime_fast_f3 [b, t]
+            + m.Charge_pertime_Route[b, t]
         )
-    m.sum_charge_hourly = pyo.Constraint(m.b, m.t, rule=Sum_Total_Charge_Hourly)
+    m.sum_charge_pertime = pyo.Constraint(m.b, m.t, rule=Sum_Total_Charge_pertime)
     
-    # 1.3. Constraints in slow charging - Define maximum hourly charging with Slow C (Eq4)
-    def Charge_Hourly_Slow(m, b, t):
-        return m.Charge_hourly_slow[b, t] <= m.PowerRate_slow[b] * m.Charging_slow[b, t] * EV_availability[b, t]
-    m.charge_hourly_slow = pyo.Constraint(m.b, m.t, rule=Charge_Hourly_Slow)
+    # 1.3. Constraints in slow charging - Define maximum pertime charging with Slow C (Eq4)
+    def Charge_pertime_Slow(m, b, t):
+        return m.Charge_pertime_slow[b, t] <= m.PowerRate_slow[b] * m.Charging_slow[b, t] * EV_availability[b, t] * delta_t
+    m.charge_pertime_slow = pyo.Constraint(m.b, m.t, rule=Charge_pertime_Slow)
     
-    # 1.4. Constraints in fast charging - Define maximum hourly charging with Fast C (Eq5)
-    def Charge_Hourly_Fast_f1(m, b, t):
-        return m.Charge_hourly_fast_f1[b, t] <= m.PowerRate_fast_f1[b] * m.Charging_fast_f1[b, t] * EV_availability[b, t]
-    m.charge_hourly_fast_f1 = pyo.Constraint(m.b, m.t, rule=Charge_Hourly_Fast_f1)
+    # 1.4. Constraints in fast charging - Define maximum pertime charging with Fast C (Eq5)
+    def Charge_pertime_Fast_f1(m, b, t):
+        return m.Charge_pertime_fast_f1[b, t] <= m.PowerRate_fast_f1[b] * m.Charging_fast_f1[b, t] * EV_availability[b, t] * delta_t
+    m.charge_pertime_fast_f1 = pyo.Constraint(m.b, m.t, rule=Charge_pertime_Fast_f1)
 
-    def Charge_Hourly_Fast_f2(m, b, t):
-        return m.Charge_hourly_fast_f2[b, t] <= m.PowerRate_fast_f2[b] * m.Charging_fast_f2[b, t] * EV_availability[b, t]
-    m.charge_hourly_fast_f2 = pyo.Constraint(m.b, m.t, rule=Charge_Hourly_Fast_f2)
+    def Charge_pertime_Fast_f2(m, b, t):
+        return m.Charge_pertime_fast_f2[b, t] <= m.PowerRate_fast_f2[b] * m.Charging_fast_f2[b, t] * EV_availability[b, t] * delta_t
+    m.charge_pertime_fast_f2 = pyo.Constraint(m.b, m.t, rule=Charge_pertime_Fast_f2)
 
-    def Charge_Hourly_Fast_f3(m, b, t):
-        return m.Charge_hourly_fast_f3[b, t] <= m.PowerRate_fast_f3[b] * m.Charging_fast_f3[b, t] * EV_availability[b, t]
-    m.charge_hourly_fast_f3 = pyo.Constraint(m.b, m.t, rule=Charge_Hourly_Fast_f3)
+    def Charge_pertime_Fast_f3(m, b, t):
+        return m.Charge_pertime_fast_f3[b, t] <= m.PowerRate_fast_f3[b] * m.Charging_fast_f3[b, t] * EV_availability[b, t] * delta_t
+    m.charge_pertime_fast_f3 = pyo.Constraint(m.b, m.t, rule=Charge_pertime_Fast_f3)
     
     # 1.5. Constraints a maximum allowed route charging for each timesetp and vehicle (Eq6) 
     def Route_Charging(m, b, t):
-        return m.Charge_hourly_Route[b, t] <= m.PowerRate_Route[b] * m.Charging_Route[b, t] * (1 - EV_availability[b, t])
+        return m.Charge_pertime_Route[b, t] <= m.PowerRate_Route[b] * m.Charging_Route[b, t] * (1 - EV_availability[b, t]) * delta_t
     m.route_charging = pyo.Constraint(m.b, m.t, rule=Route_Charging)    
     
      # 1.6. Charging energy in the distribution terminal by vehicle (v) and time (t) - (eq7)
     def DT_Grid_Purchase(m, b, t):
-        return (m.DT_Grid_purchase[b, t] * Ch_losses) - m.Charge_hourly_slow[b, t] - m.Charge_hourly_fast_f1[b, t] - m.Charge_hourly_fast_f2[b, t] - m.Charge_hourly_fast_f3[b, t] == 0
+        return (m.DT_Grid_purchase[b, t] * Ch_losses) - m.Charge_pertime_slow[b, t] - m.Charge_pertime_fast_f1[b, t] - m.Charge_pertime_fast_f2[b, t] - m.Charge_pertime_fast_f3[b, t] == 0
     m.DT_grid_purchase = pyo.Constraint(m.b, m.t, rule=DT_Grid_Purchase)
     
     # 1.7. Variable maximum power demand from the grid at DT was constrained as the maximum power purchased from the grid at a specific timestep for the summation of all vehicles at the DT (Eq8)
@@ -312,16 +314,16 @@ def optimisation(opt_config, cost_config, power_config):
     # 3. Constraints on charging and discharging
 
     # 3.1 Define discharging that takes place during EV movement (1-EV_Availability) - (Eq13)
-    def Discharge_Hourly(m, b, t):
-        return m.Discharge_hourly[b, t] == Energy_Consumption_km[b, t] * Distance_km[b, t] * (1 - EV_availability[b, t])
-    m.discharge_hourly = pyo.Constraint(m.b, m.t, rule=Discharge_Hourly)
+    def Discharge_pertime(m, b, t):
+        return m.Discharge_pertime[b, t] == Energy_Consumption_km[b, t] * Distance_km[b, t] * (1 - EV_availability[b, t])
+    m.discharge_pertime = pyo.Constraint(m.b, m.t, rule=Discharge_pertime)
     
-    # 3.2 Define storage level change during a day dependent on the hourly discharge (Eq14)
+    # 3.2 Define storage level change during a day dependent on the pertime discharge (Eq14)
     def Storage_Level(m, b, t):
         if t == 1:
-            return m.Storage_level[b, t] == m.Start_Storage[b] + (Ch_losses * m.Charge_hourly[b, t]) - m.Discharge_hourly[b, t]
+            return m.Storage_level[b, t] == m.Start_Storage[b] + (Ch_losses * m.Charge_pertime[b, t]) - m.Discharge_pertime[b, t]
         else:
-            return m.Storage_level[b, t] == m.Storage_level[b, t - 1] + (Ch_losses * m.Charge_hourly[b, t]) - m.Discharge_hourly[b, t]
+            return m.Storage_level[b, t] == m.Storage_level[b, t - 1] + (Ch_losses * m.Charge_pertime[b, t]) - m.Discharge_pertime[b, t]
     m.storage_level = pyo.Constraint(m.b, m.t, rule=Storage_Level)
     
     # 3.3 When the storage starts (Eq18)
@@ -344,8 +346,8 @@ def optimisation(opt_config, cost_config, power_config):
         if t == 1:
             return m.Battery_Cycles[b, t] == 0
         else:
-            return m.Battery_Cycles[b, t] == (Ch_losses * m.Charge_hourly[b, t]) / Battery_Limitation[b]
-    m.Battery_Cycles_Hourly = pyo.Constraint(m.b, m.t, rule=Battery_Cycles)
+            return m.Battery_Cycles[b, t] == (Ch_losses * m.Charge_pertime[b, t]) / Battery_Limitation[b]
+    m.Battery_Cycles_pertime = pyo.Constraint(m.b, m.t, rule=Battery_Cycles)
     
     
     # Objective Function
@@ -357,11 +359,11 @@ def optimisation(opt_config, cost_config, power_config):
             +(m.CS_fast_f3 * Annualized_Infrastructure_cost['f3'])
             #+ sum(m.CS_fast[f] * Annualized_Infrastructure_cost[f] for f in m.f)
             + (Infrastructure_subscription * days)
-            + sum(m.Charge_hourly_fast_f1[b, t] / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)  # Electricity cost on fast charging f1
-            + sum(m.Charge_hourly_fast_f2[b, t] / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)  # Electricity cost on fast charging f2
-            + sum(m.Charge_hourly_fast_f3[b, t] / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)  # Electricity cost on fast charging f3
+            + sum(m.Charge_pertime_fast_f1[b, t] / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)  # Electricity cost on fast charging f1
+            + sum(m.Charge_pertime_fast_f2[b, t] / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)  # Electricity cost on fast charging f2
+            + sum(m.Charge_pertime_fast_f3[b, t] / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)  # Electricity cost on fast charging f3
             + m.Max_Power * Demand_rate
-            + sum(m.Charge_hourly_Route[b, t] / Ch_losses * Price_FixedrateRoute for b in m.b for t in m.t)
+            + sum(m.Charge_pertime_Route[b, t] / Ch_losses * Price_FixedrateRoute for b in m.b for t in m.t)
             + sum(m.Charging_Route[b, t] * 9999 for b in m.b for t in m.t)
         )
     m.objective = pyo.Objective(rule=ObjectiveFunction, sense=pyo.minimize)
@@ -405,7 +407,7 @@ def optimisation(opt_config, cost_config, power_config):
       
         
     # Now access the value of decision variables
-    print(pyo.value(m.Charge_hourly[1,1]))
+    print(pyo.value(m.Charge_pertime[1,1]))
     
     print(result)
               
@@ -462,7 +464,7 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
         data.append({
             'Date': day(t),
             'Hour': (t - 1) - (day(t) - 1) * 24,
-            'Charging energy': sum(pyo.value(m.Charge_hourly[b, t]) for b in m.b),
+            'Charging energy': sum(pyo.value(m.Charge_pertime[b, t]) for b in m.b),
             'Price': Price[t],
             'Energy Purchase from grid': sum(pyo.value(m.Total_Grid_purchase[b, t]) for b in m.b),
             'Cost of energy supply from grid at DT': sum(pyo.value(m.DT_Grid_purchase[b, t] * (Price[t] + Price_FixedrateDT)) for b in m.b),
@@ -472,11 +474,11 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
             'EVs fast charging 150kW': sum(pyo.value(m.Charging_fast_f2[b, t]) for b in m.b),
             'EVs fast charging 350kW': sum(pyo.value(m.Charging_fast_f3[b, t]) for b in m.b),
             'EVs route charging': sum(pyo.value(m.Charging_Route[b, t]) for b in m.b),
-            'Slow Charging Hourly': sum(pyo.value(m.Charge_hourly_slow[b, t]) for b in m.b),
-            'Fast Charging Hourly 50kW': sum(pyo.value(m.Charge_hourly_fast_f1[b, t]) for b in m.b),
-            'Fast Charging Hourly 150kW': sum(pyo.value(m.Charge_hourly_fast_f2[b, t]) for b in m.b),
-            'Fast Charging Hourly 350kW': sum(pyo.value(m.Charge_hourly_fast_f3[b, t]) for b in m.b),
-            'Route Charging Hourly': sum(pyo.value(m.Charge_hourly_Route[b, t]) for b in m.b)
+            'Slow Charging pertime': sum(pyo.value(m.Charge_pertime_slow[b, t]) for b in m.b),
+            'Fast Charging pertime 50kW': sum(pyo.value(m.Charge_pertime_fast_f1[b, t]) for b in m.b),
+            'Fast Charging pertime 150kW': sum(pyo.value(m.Charge_pertime_fast_f2[b, t]) for b in m.b),
+            'Fast Charging pertime 350kW': sum(pyo.value(m.Charge_pertime_fast_f3[b, t]) for b in m.b),
+            'Route Charging pertime': sum(pyo.value(m.Charge_pertime_Route[b, t]) for b in m.b)
         })
     
     df = pd.DataFrame(data)
@@ -497,7 +499,7 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
         writer.writerow({'Category': 'Slow CS', 'Description': 'Infrastructure Cost', 
                  'Value': pyo.value(m.CS_slow) * Annualized_Infrastructure_cost['s']})
 
-        writer.writerow({'Category': 'Slow CS', 'Description': 'Electricity Cost', 'Value': sum(pyo.value(m.Charge_hourly_slow[b, t])  / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)})
+        writer.writerow({'Category': 'Slow CS', 'Description': 'Electricity Cost', 'Value': sum(pyo.value(m.Charge_pertime_slow[b, t])  / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)})
 
         # Fast Charging Stations f1 (50kW)
         writer.writerow({'Category': f'Fast CS {Charger_Power["f1"]}kW', 'Description': 'Chargers number', 
@@ -507,7 +509,7 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
             'Value': pyo.value(m.CS_fast_f1) * Annualized_Infrastructure_cost['f1']})
 
         writer.writerow({'Category': f'Fast CS {Charger_Power["f1"]}kW', 'Description': 'Electricity Cost', 
-            'Value': sum(pyo.value(m.Charge_hourly_fast_f1[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT) 
+            'Value': sum(pyo.value(m.Charge_pertime_fast_f1[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT) 
                     for b in m.b for t in m.t)})
 
         # Fast Charging Stations f2 (150kW)
@@ -518,7 +520,7 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
             'Value': pyo.value(m.CS_fast_f2) * Annualized_Infrastructure_cost['f2']})
 
         writer.writerow({'Category': f'Fast CS {Charger_Power["f2"]}kW', 'Description': 'Electricity Cost', 
-            'Value': sum(pyo.value(m.Charge_hourly_fast_f2[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT) 
+            'Value': sum(pyo.value(m.Charge_pertime_fast_f2[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT) 
                     for b in m.b for t in m.t)})
 
         # Fast Charging Stations f3 (350kW)
@@ -529,7 +531,7 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
             'Value': pyo.value(m.CS_fast_f3) * Annualized_Infrastructure_cost['f3']})
 
         writer.writerow({'Category': f'Fast CS {Charger_Power["f3"]}kW', 'Description': 'Electricity Cost', 
-            'Value': sum(pyo.value(m.Charge_hourly_fast_f3[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT) 
+            'Value': sum(pyo.value(m.Charge_pertime_fast_f3[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT) 
                     for b in m.b for t in m.t)})
             
         writer.writerow({'Category': 'DT', 'Description': 'Infrastructure Cost', 'Value': (
@@ -544,7 +546,7 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
 
         writer.writerow({'Category': 'Route CS', 'Description': 'Chargers number', 'Value': pyo.value(m.CS_Route)})
         #writer.writerow({'Category': 'Route CS', 'Description': 'Times', 'Value': sum(pyo.value(m.Charging_Route[b, t]) for b in m.b for t in m.t)})
-        writer.writerow({'Category': 'Route CS', 'Description': 'Electricity Cost', 'Value': sum(pyo.value(m.Charge_hourly_Route[b, t]) * Price_FixedrateRoute for b in m.b for t in m.t)})
+        writer.writerow({'Category': 'Route CS', 'Description': 'Electricity Cost', 'Value': sum(pyo.value(m.Charge_pertime_Route[b, t]) * Price_FixedrateRoute for b in m.b for t in m.t)})
 
     # 3. EV descriptive file
     with open(csv_file_pathD,  mode='w', newline='') as file:
@@ -552,7 +554,7 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
 
         header = [
             'Day', 'Hour', 'Price', 'Vehicle ID', 'Charging Energy',
-            'Discharging Energy', 'Storage Level', 'Hourly Battery Cycles',
+            'Discharging Energy', 'Storage Level', 'pertime Battery Cycles',
             'Cost of energy supply from grid at DT', 'Cost of energy supply on route', 'EV Available',
             'Slow Charging', 'Fast Charging 50kW', 'Fast Charging 150kW',
             'Fast Charging 350kW', 'Route Charging', 'Distance travelled by hour'
@@ -567,18 +569,18 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
                     (t - 1) - (day(t) - 1) * 24,
                     Price[t],
                     b,
-                    pyo.value(m.Charge_hourly[b, t]),
-                    pyo.value(m.Discharge_hourly[b, t]),
+                    pyo.value(m.Charge_pertime[b, t]),
+                    pyo.value(m.Discharge_pertime[b, t]),
                     pyo.value(m.Storage_level[b, t]),
                     pyo.value(m.Battery_Cycles[b, t]),
                     pyo.value(m.DT_Grid_purchase[b, t] * (Price[t] + Price_FixedrateDT)),
                     pyo.value((m.Total_Grid_purchase[b, t] - m.DT_Grid_purchase[b, t]) * (Price_FixedrateRoute)),
                     EV_availability[b, t],
-                    pyo.value(m.Charge_hourly_slow[b, t]),
-                    pyo.value(m.Charge_hourly_fast_f1[b, t]),
-                    pyo.value(m.Charge_hourly_fast_f2[b, t]),
-                    pyo.value(m.Charge_hourly_fast_f3[b, t]),
-                    pyo.value(m.Charge_hourly_Route[b, t]),
+                    pyo.value(m.Charge_pertime_slow[b, t]),
+                    pyo.value(m.Charge_pertime_fast_f1[b, t]),
+                    pyo.value(m.Charge_pertime_fast_f2[b, t]),
+                    pyo.value(m.Charge_pertime_fast_f3[b, t]),
+                    pyo.value(m.Charge_pertime_Route[b, t]),
                     pyo.value(Distance_km[b, t])
                 ])
     print("✅ Results saved successfully as CSV!")
