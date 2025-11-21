@@ -1,0 +1,19 @@
+Category,Description,Value
+Slow CS,Chargers number,13.0
+Slow CS,Infrastructure Cost,128632.37164221819
+Slow CS,Electricity Cost,200479.83082979382
+Fast CS 50kW,Chargers number,-0.0
+Fast CS 50kW,Infrastructure Cost,-0.0
+Fast CS 50kW,Electricity Cost,0.0
+Fast CS 150kW,Chargers number,-0.0
+Fast CS 150kW,Infrastructure Cost,-0.0
+Fast CS 150kW,Electricity Cost,0.0
+Fast CS 350kW,Chargers number,-0.0
+Fast CS 350kW,Infrastructure Cost,-0.0
+Fast CS 350kW,Electricity Cost,0.0
+DT,Infrastructure Cost,128632.37164221819
+DT,Electricity Cost,200479.83082980078
+DT,Chargers number,13.0
+DT,Max Power [kW],74.43755472343192
+Route CS,Chargers number,4.0
+Route CS,Electricity Cost,20066.797641831778
