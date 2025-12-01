@@ -391,7 +391,7 @@ class ScheduleGenerator:
                                                            
                     
 
-                    pause_beg_timestep, pause_beg_min = self.Time_constraints(
+                    pause_beg_hour, pause_beg_min = self.Time_constraints(
                         self.sc.pause_beg_mean_wd,
                         self.sc.pause_beg_dev_wd,
                         self.sc.min_beg_time,  # Or use proper pause min/max if you have them
