@@ -130,9 +130,9 @@ def graph_vehicles(folder_path, file_path, n_days, n_vehicles):
 
         ax = axs[i]
 
-        # Plot charging/discharging energy
-        ax.plot(vehicle_data['TimeIndex'], vehicle_data['Charging Energy'], label='Charging Energy', linewidth=1.5, color='orange')
-        ax.plot(vehicle_data['TimeIndex'], vehicle_data['Discharging Energy'], label='Discharging Energy', linewidth=1.5)
+        # Plot charging/discharging energy as bar charts
+        ax.bar(vehicle_data['TimeIndex'], vehicle_data['Charging Energy'], label='Charging Energy', width=0.8, color='orange', alpha=0.7)
+        ax.bar(vehicle_data['TimeIndex'], vehicle_data['Discharging Energy'], label='Discharging Energy', width=0.8, alpha=0.7)
 
         # Day separator lines
         for pos in day_positions:
@@ -144,14 +144,14 @@ def graph_vehicles(folder_path, file_path, n_days, n_vehicles):
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.margins(x=0.01)
-        ax.set_ylim(0, 50)
+        ax.set_ylim(0, 40)
         # Add secondary axis for Storage Level
         ax2 = ax.twinx()
         ax2.plot(vehicle_data['TimeIndex'], vehicle_data['Storage Level'], label='SOC', linewidth=1.5, color='green', linestyle='dashed')
         ax2.set_ylabel('Storage Level (kWh)', fontsize=16)
         ax2.spines['top'].set_visible(False)
         ax2.grid(False)
-        ax2.set_ylim(0, 100)
+        ax2.set_ylim(0, 40)
 
         # Show x-tick labels on all subplots
         ax.set_xticks(hour_ticks)
