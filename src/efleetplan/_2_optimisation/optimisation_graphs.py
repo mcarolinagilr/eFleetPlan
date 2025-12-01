@@ -144,7 +144,7 @@ def graph_vehicles(folder_path, file_path, n_days, n_vehicles):
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.margins(x=0.01)
-        ax.set_ylim(0, 40)
+        ax.set_ylim(0, 10)
         # Add secondary axis for Storage Level
         ax2 = ax.twinx()
         ax2.plot(vehicle_data['TimeIndex'], vehicle_data['Storage Level'], label='SOC', linewidth=1.5, color='green', linestyle='dashed')
