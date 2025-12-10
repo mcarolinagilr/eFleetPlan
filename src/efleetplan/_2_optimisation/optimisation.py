@@ -359,6 +359,7 @@ def optimisation(opt_config, cost_config, power_config):
             +(m.CS_fast_f3 * Annualized_Infrastructure_cost['f3'])
             #+ sum(m.CS_fast[f] * Annualized_Infrastructure_cost[f] for f in m.f)
             + (Infrastructure_subscription * days)
+            + sum(m.Charge_pertime_slow[b, t] / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)  # Electricity cost on slow charging
             + sum(m.Charge_pertime_fast_f1[b, t] / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)  # Electricity cost on fast charging f1
             + sum(m.Charge_pertime_fast_f2[b, t] / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)  # Electricity cost on fast charging f2
             + sum(m.Charge_pertime_fast_f3[b, t] / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)  # Electricity cost on fast charging f3
