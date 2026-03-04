@@ -1,0 +1,32 @@
+/* Headings */
+h1 {
+  font: bold 2rem "Source Code Pro", monospace !important;
+  font-size: 2rem !important;
+  color: #0a4850 !important;
+}
+
+h2 {
+  font-size: 1.6rem !important;
+  color: #0a4850 !important;
+}
+
+h3 {
+  font-size: 1.2rem !important;
+  color: #0a4850 !important;
+}
+
+/* Body text size */
+.md-typeset {
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+/* Navigation sidebar */
+.md-nav {
+  font-size: 0.75rem;
+}
+
+/* Code blocks */
+.md-typeset code {
+  font-size: 0.8rem;
+}

@@ -1,0 +1,52 @@
+# =============================================================================
+# Schedule Type Predefined
+# =============================================================================
+# Each top-level key is a schedule type name.
+# The Python config loader will map these directly to ScheduleConfig attributes.
+
+typea:
+  # Continuous schedule — no midday depot return
+  dep_mean_wd: 8
+  dep_dev_wd: 1
+  ret_mean_wd: 18
+  ret_dev_wd: 1
+  dep_mean_we: 8
+  dep_dev_we: 1
+  ret_mean_we: 18
+  ret_dev_we: 1
+  min_dep: 6
+  max_dep: 11
+  min_return_hour: 18
+  max_return_hour: 22
+
+typeb:
+  # Break schedule — middle depot stop for charging / reloading
+  dep_mean_wd: 6
+  dep_dev_wd: 1
+  min_dep: 3
+  max_dep: 10
+
+  pause_beg_mean_wd: 12
+  pause_beg_dev_wd: 0.25
+  pause_end_mean: 13
+  pause_end_dev: 0.25
+  max_beg_time: 13
+  min_beg_time: 11
+  max_pause_end: 15
+  min_pause_end: 12
+  pause_time_mean: 0.5
+  pause_time_dev: 0.1
+
+  ret_mean_wd: 19
+  ret_dev_wd: 1
+  max_return_hour: 22
+  min_return_hour: 15
+
+  dep_mean_we: 9
+  dep_dev_we: 1
+  pause_beg_mean_we: 12
+  pause_beg_dev_we: 0.25
+  ret_mean_we: 19
+  ret_dev_we: 0.5
+
+  prob_emergency: 0.02

@@ -1,0 +1,75 @@
+# =============================================================================
+# CONFIGURATION OF THE FLEET OPERATIONS simulation RUN
+# =============================================================================
+# Defines one simulation run: fleet size, vehicle/schedule mix, and company type.
+# Advice is to create a new file for each run.
+
+# In this file the user can define custom schedule, vehicle, and company parameters.
+
+schedule_name: "Example_4"
+
+fleet:
+  n_vehicles: 30
+
+  # How many vehicles use each schedule type (must sum to n_vehicles).
+  # Names must match keys in predefined/schedules.yaml (or "custom")
+  schedule_mix:
+    typea: 30
+    typeb: 0
+    custom: 0
+
+  # How many vehicles of each vehicle model (must sum to n_vehicles).
+  # Names must match keys in predefined/vehicles.yaml (or "custom").
+  vehicle_mix:
+    renault: 30
+    toyota: 0
+    custom: 0
+
+  # Company/use-case profile — must match a key in predefined/companies.yaml (or "custom").
+  #Predefined company types include: "distribution", "linehaul", "craft_serv_with_goods", "craft_serv_without_goods", "food", "mail", "building", "highdistance", "generalcargo", "nogoods"
+  company_type: mail
+
+# ---------------------------------------------------------------------------
+# Custom overrides — used when a mix entry above is set to "custom".
+# ---------------------------------------------------------------------------
+
+#schedule_mix is defined custom
+if schedule_mix.custom > 0:
+  custom_schedule:
+    dep_mean_wd: 8
+    dep_dev_wd: 1
+    ret_mean_wd: 18
+    ret_dev_wd: 1
+    dep_mean_we: 9
+    dep_dev_we: 1
+    ret_mean_we: 19
+    ret_dev_we: 1
+    min_dep: 6
+    max_dep: 11
+    min_return_hour: 18
+    max_return_hour: 22
+
+#vehicle_mix is defined custom
+if vehicle_mix.custom > 0:
+  custom_vehicle:
+    consumption_mean: 0.2
+    consumption_std: 0.1
+    consumption_min: 0.1
+    consumption_max: 0.3
+    total_cons_clip: 45
+    battery_capacity: 45
+    charging_power: 60
+
+#company_mix is defined custom
+if company_mix.custom > 0:
+  custom_company:
+    avg_distance_wd: 120
+    dev_distance_wd: 15
+    avg_distance_we: 70
+    dev_distance_we: 15
+    min_distance: 30
+    max_distance: 300
+    min_distance_per_step: 1
+    max_distance_per_step: 50
+    avg_stops: 30
+    dev_stops: 10

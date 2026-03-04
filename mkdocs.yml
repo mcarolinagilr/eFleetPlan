@@ -7,11 +7,15 @@ repo_name: carolinagr/eFleetPlan
 
 theme:
   name: material
+  font:
+    text: "Arial"
+    code: "Roboto Mono"
   language: en
   features:
     - navigation.sections
     - navigation.instant
     - navigation.top
+    - navigation.expand
     - content.code.copy
     - toc.integrate
     - content.tabs.link
@@ -34,6 +38,8 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.tabbed:
       alternate_style: true
+  - attr_list
+  - tables
 
 plugins:
   - search
@@ -45,7 +51,23 @@ plugins:
             show_source: true
 
 nav:
-  - Home: index.md
-  - Getting started: getting-started.md
-  - Modules and functions: modules.md
-  - API Reference: api.md
+  - "Home": index.md
+  - "0. Getting started": getting-started.md
+  - "1. User guide": 
+      - "1.1. Overview": user-guide/overview.md
+      - "1.2. Package 1 - Fleet operation simulation": user-guide/package1.md
+      - "1.3. Package 2 - Co-optimisation": user-guide/package2.md
+  - "2. Configuration settings":
+      - "2.1. Environment": configuration/environment.md
+      - "2.2. Fleet Operation simulation": configuration/fleetoperation_simulation.md
+      - "2.3. Co-optimisation": configuration/co-optimisation.md
+      - "2.4. Predefined parameters": configuration/predefined.md
+  - "3. Software functionalities":
+      - "3.1. Config Loaders": api/config-loaders.md
+      - "3.2. Fleet operation simulation": api/fleetoperation_simulation.md
+      - "3.3. Co-optimisation": api/co-optimisation.md
+      - "3.4. Visualisation": api/visualisation.md
+  - "4. Examples & Tutorials": examples.md
+
+extra_css:
+  - stylesheets/extra.css
