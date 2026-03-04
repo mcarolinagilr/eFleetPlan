@@ -5,7 +5,7 @@
 # The Python config loader will map these directly to ScheduleConfig attributes.
 
 typea:
-  # Continuous schedule — no midday depot return
+  # Continuous schedule — no break in the middle of the day, just a single stop in the distribution terminal at the beginning and a single return at the end of the day
   dep_mean_wd: 8
   dep_dev_wd: 1
   ret_mean_wd: 18
@@ -20,7 +20,7 @@ typea:
   max_return_hour: 22
 
 typeb:
-  # Break schedule — middle depot stop for charging / reloading
+  # Schedule with two parts, with a break /middle stop in the day at the distribution terminal for charging / reloading
   dep_mean_wd: 6
   dep_dev_wd: 1
   min_dep: 3

@@ -145,7 +145,7 @@ def _build_cost_dicts(infra_raw):
 
 
 # ---------------------------------------------------------------------------
-# Main loader
+# Main loader function
 # ---------------------------------------------------------------------------
 
 def load_opt_config(run_yaml: str,
@@ -208,7 +208,6 @@ def load_opt_config(run_yaml: str,
 
     # --- Build opt_config ---
     sname = run.schedule_name
-    snum  = run.schedule_number
 
     input_folder  = os.path.join(project_root, "data", "Input")
     output_folder = os.path.join(project_root, "data", "Output", sname)

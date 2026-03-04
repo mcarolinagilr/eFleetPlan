@@ -2,7 +2,7 @@
 # CONFIGURATION OF THE FLEET OPERATIONS simulation RUN
 # =============================================================================
 # Defines one simulation run: fleet size, vehicle/schedule mix, and company type.
-# Advice is to create a new file for each run.
+# Main advice is to create a new file for each run.
 
 # In this file the user can define custom schedule, vehicle, and company parameters.
 

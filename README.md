@@ -119,7 +119,7 @@ Contains reusable definitions for vehicles, schedules, companies, and infrastruc
 
 Place the following files in this folder before running the tool:
 
-- **Energy consumption file** — energy consumption profiles for the vehicles.
+- **Energy consumption factor file** — energy consumption factor, that is linked to the environment temperature.
 - **Electricity price file** — time-series electricity prices for the simulation period.
 
 

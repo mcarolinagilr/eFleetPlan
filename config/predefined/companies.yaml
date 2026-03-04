@@ -1,12 +1,10 @@
 # =============================================================================
-# Company / Use-Case predefided
+# Company type/ Use-Case predefined
 # =============================================================================
-# Each key is a company type. All share the same parameter schema, which
-# eliminates the repetitive if-chains in the old schedule_configure.py.
-
-# #### Company type
+# Each key is a company type or commodity type, and the values are the parameters related to the distance and stops of the trips.
 #The values related to company type are defined based on the findings of a survey 
 #on light goods vehicles in Sweden conducted by Transport Analysis in 2022. 
+
 
 # Shared defaults 
 _defaults: &defaults

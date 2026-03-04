@@ -6,6 +6,7 @@
 # Infrastructure and power parameters are loaded separately from infrastructure_configuration.yaml, 
 # but here you can also use custom parameters for the optimisation run (e.g. MIPGap, time horizon, etc.)
 
+# Main advice is to create a new file for each run.
 
 schedule_name: "schedule_1"
 schedule_number: 1

@@ -52,7 +52,7 @@ def _resolve_path(relative: str, base_dir: Path) -> Path:
 
 class ScheduleConfig(BaseModel):
     """
-    Schedule timing parameters 
+    Schedule time parameters 
     """
     model_config = {"extra": "forbid"}
 
@@ -133,7 +133,7 @@ class CompanyConfig(BaseModel):
 # =============================================================================
 
 class EnvironmentConfig(BaseModel):
-    """simulation environment — dates, seed, file paths."""
+    """environment — dates, seed, file paths."""
     model_config = {"extra": "forbid"}
 
     seed: int
@@ -160,13 +160,13 @@ class EnvironmentConfig(BaseModel):
 
 
 # =============================================================================
-# Preset library
+# Parameter library for predefined schedules, vehicles, and companies, loaded from YAML files in the predefined/ directory.
 # =============================================================================
 
 class PredefinedLibrary(BaseModel):
-    """Holds all predefided loaded from the predefided/ directory.
+    """Holds all predefined parameters loaded from the predefined/ directory.
 
-    Provides typed lookup: predefided.get_vehicle("renault") → VehicleConfig.
+    Provides typed lookup: predefined.get_vehicle("renault") → VehicleConfig.
     """
     schedules: dict[str, dict]
     vehicles: dict[str, dict]
@@ -194,24 +194,25 @@ class PredefinedLibrary(BaseModel):
         return CompanyConfig(**raw)
 
     @staticmethod
-    def _resolve(kind: str, name: str, predefided: dict, custom: dict | None) -> dict:
+    def _resolve(kind: str, name: str, predefined: dict, custom: dict | None) -> dict:
         if name == "custom":
             if not custom:
                 raise ValueError(f"'{kind}' set to 'custom' but no custom_{kind} block provided in run.yaml")
             return custom
-        if name not in predefided:
-            available = ", ".join(sorted(predefided.keys()))
+        if name not in predefined:
+            available = ", ".join(sorted(predefined.keys()))
             raise ValueError(f"Unknown {kind} '{name}'. Available: {available}")
-        return predefided[name]
+        return predefined[name]
 
 
 # =============================================================================
-# Creation of a configuration class to create a class of parameters per each fleet 
+# Configuration class for the fleet: ables the creation of a fleet, that includes the electric vehicle mix.
+# Mix includes: number of vehicles, schedule mix, vehicle mix, and company type. 
 # =============================================================================
 
 class RunConfig(BaseModel):
     """
-    Defines a single simulation fleet — fleet size, composition, company type.
+    Defines the fleet — fleet size, composition, company type.
     """
     model_config = {"extra": "forbid"}
 
@@ -256,7 +257,7 @@ class RunConfig(BaseModel):
 
 
 # =============================================================================
-# Loading, formating and returning all parameters
+# Loading, formating and returning all parameters configurations for the fleet operation simulation.
 # =============================================================================
 
 def load_config(
@@ -265,13 +266,13 @@ def load_config(
     predefined_dir: str | Path | None = None,
 ) -> tuple[EnvironmentConfig, RunConfig, PredefinedLibrary]:
     """
-    Load and validate all configuration from YAML files.
+    Read and validate all configuration from YAML files.
 
     Parameters:
     ----------
         env_yaml : path to environment config
         run_yaml : path to run/scenario config
-        predefined_dir : path to predefided folder (default: predefided/ next to env_yaml)
+        predefined_dir : path to predefined folder (default: predefined/ next to env_yaml)
 
     Returns:
     -------
@@ -286,14 +287,14 @@ def load_config(
     run_path = Path(run_yaml).resolve()
 
     if predefined_dir is None:
-        predefined_dir = env_path.parent / "predefided"
+        predefined_dir = env_path.parent / "predefined"
     else:
         predefined_dir = Path(predefined_dir).resolve()
 
     env = EnvironmentConfig.from_yaml(_load_yaml(env_path), env_path.parent)
     run = RunConfig.from_yaml(_load_yaml(run_path))         # validates on construction
-    predefided = PredefinedLibrary.from_directory(predefined_dir)
+    predefined = PredefinedLibrary.from_directory(predefined_dir)
 
     logger.info("Config loaded: %s, %d vehicles, company=%s",
                 run.schedule_name, run.n_vehicles, run.company_type)
-    return env, run, predefided
+    return env, run, predefined

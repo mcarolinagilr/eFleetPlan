@@ -1,8 +1,10 @@
 # =============================================================================
-# Vehicle predefided
+# Vehicle predefined
 # =============================================================================
 # Each key maps to a vehicle model. Add new vehicles by adding a new block.
+# This vehicles are used as examples, but the values are not based on real data. Adjust the values according to the specifications of the vehicles you want to model.
 
+#Renault Kangoo Z.E.
 renault:
   consumption_mean: 0.192       # kWh/km
   consumption_std: 0.1365
@@ -12,6 +14,7 @@ renault:
   battery_capacity: 45          # kWh
   charging_power: 80            # kW
 
+#Toyota Proace Electric
 toyota:
   consumption_mean: 0.269
   consumption_std: 0.1365
