@@ -2,8 +2,7 @@
 **File:** `config/env.yaml`
 The environment configuration controls the global simulation settings shared by both packages.
 
-## Full example
-
+## 2.1.1 Full example
 ```yaml
 seed: 42
 
@@ -19,8 +18,7 @@ paths:
   input_for_optimisation: "../data/Output"
 ```
 
-## Parameter reference
-
+## 2.1.2 Parameter reference
 ### Top-level
 
 | Parameter | Type | Description |
@@ -36,7 +34,6 @@ paths:
 | `freq` | string | `"h"` | Pandas frequency string. `"h"` = hourly timesteps. |
 
 ### `paths` section
-
 All paths are resolved relative to the location of `env.yaml`.
 
 | Parameter | Type | Description |
@@ -45,7 +42,6 @@ All paths are resolved relative to the location of `env.yaml`.
 | `output_base` | string | Base directory for all output files. |
 | `input_for_optimisation` | string | Directory where Package 1 outputs are stored (used by Package 2). Typically the same as `output_base`. |
 
-## Notes
-
+## 2.2.3 Notes
 - The `freq` parameter must match the resolution of your input data. Currently only hourly (`"h"`) is fully supported.
 - Changing the `seed` produces different stochastic schedules while keeping all other parameters fixed — useful for Monte Carlo analysis.

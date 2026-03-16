@@ -34,7 +34,7 @@ All parameters are included in the `config/` directory. User can/should edit the
 | `run_FleetSchedule_Config.yaml` | LCV fleet definition for operation schedules generation |
 | `run_Optimisation_Config.yaml` | Settings for the co-optimisation |
 
-See the [Configuration settings](../configuration) for a full description of parameter predefined.
+See the [Configuration settings](../configuration/predefined.md) for a full description of parameter predefined.
 
 Predefined parameters 
 This should not be changed, user can use custom option to use their specific parameters.

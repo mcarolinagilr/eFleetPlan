@@ -16,7 +16,7 @@ def calculate_days(start_str: str, end_str: str) -> int:
 
 
 def prepare_data(opt_config: dict):
-    """Vectorized data preparation (same idea as your version 2)."""
+    """Vectorized data preparation"""
     start_dt = pd.to_datetime(opt_config["opt_start_date"])
     end_dt   = pd.to_datetime(opt_config["opt_end_date"])
     EVs      = int(opt_config["EVs"])
@@ -119,6 +119,7 @@ def optimisation(opt_config, cost_config, power_config):
         'f2': float(cost_config["Infrastructure_cost"]['f2']) * annuity + float(cost_config["maintenance_cost"]['f2']),
         'f3': float(cost_config["Infrastructure_cost"]['f3']) * annuity + float(cost_config["maintenance_cost"]['f3']),
         'f4': float(cost_config["Infrastructure_cost"]['f4']) * annuity + float(cost_config["maintenance_cost"]['f4']),
+        'route': float(cost_config["Infrastructure_cost"]['route']) * annuity + float(cost_config["maintenance_cost"]['route'])
     }
 
     m.Infrastructure_subscription = Param(initialize=float(cost_config["Infrastructure_subscription"]))
@@ -309,7 +310,7 @@ def optimisation(opt_config, cost_config, power_config):
         return m.Storage_level[b, t] >= m.BatMin * m.Battery_Limitation[b]
 
 
-    # ------------ Objective ------------
+    # ------------ Objective function------------
     def obj_rule(m):
         infra = (
             m.CS_f1 * Annualized_Infrastructure_cost['f1'] +
@@ -335,10 +336,10 @@ def optimisation(opt_config, cost_config, power_config):
         demand = m.Max_Power * m.Demand_rate
 
         # Keep your penalty if you want to discourage route charging
-        penalty = quicksum(m.Charging_route[b, t] * 99999 for b in m.b for t in m.t) + m.CS_route*0.1
+        Infrastructure_route = quicksum(m.Charging_route[b, t] for b in m.b for t in m.t) + m.CS_route*Annualized_Infrastructure_cost['route']
 
 
-        return infra + energy_dt + energy_route + demand + penalty
+        return infra + energy_dt + energy_route + demand + Infrastructure_route
 
     m.objective = Objective(rule=obj_rule, sense=pyo.minimize)
 
@@ -348,37 +349,10 @@ def optimisation(opt_config, cost_config, power_config):
     # Compromise: Semi-deterministic but faster
 
     solver.options['MIPGap'] = opt_config["MIPGap"]
-    solver.options['ScaleFlag'] = 2
     solver.options['LogFile'] = "gurobi_log_V2.txt"
-
-    # Speed vs determinism balance
-    # Threads increase RAM pressure significantly (each worker needs its own state).
-    # For large MILPs, fewer threads is often *more* stable.
     solver.options['Threads'] = 16
     solver.options['Seed'] = 42                   # Fixed seed for some reproducibility
-    solver.options['Method'] = -1                  # Deterministic barrier method
-    solver.options['Presolve'] = 2                # Keep presolve for speed
-    solver.options['NodeMethod'] = 2              # Deterministic node method
-
-    # Memory-friendly settings
-    # Cuts can blow up memory; prefer fewer cuts on very large instances.
-    solver.options['Cuts'] = 1
-    solver.options['Cutpasses'] = 5
-    solver.options['Heuristics'] = 0.5
-    #solver.options['SolutionLimit'] = 5  # Stop after finding 5 good solutions
-    #solver.options['BestObjStop'] = 5e6  # Stop if objective < 5M
-
-    solver.options['NodefileStart'] = 2          # start writing B&B nodes to disk (GB) - earlier is safer
-    
-    # Optional safety rails (uncomment if you prefer a bounded run instead of risking OOM)
-    # solver.options['TimeLimit'] = 6 * 3600       # e.g. 6 hours
-    # solver.options['MemLimit'] = 0               # set to a value in MB to force early stop (license dependent)
-
-    #solver.options['TimeLimit'] = 3600            # 1 hour limit per job
-    solver.options['MIPFocus'] = 2  
-    
-      
-    
+            
     print(f"→ Solving model with {EVs} vehicles over {hours} time steps (delta_t={delta_t})...")
     t_start = time.time()
     result = solver.solve(m, tee=True)
@@ -407,7 +381,8 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
         'f1': Infrastructure_cost['f1'] * Annuity_factor + maintenance_cost['f1'],
         'f2': Infrastructure_cost['f2'] * Annuity_factor + maintenance_cost['f2'],
         'f3': Infrastructure_cost['f3'] * Annuity_factor + maintenance_cost['f3'],
-        'f4': Infrastructure_cost['f4'] * Annuity_factor + maintenance_cost['f4']
+        'f4': Infrastructure_cost['f4'] * Annuity_factor + maintenance_cost['f4'],
+        'route': Infrastructure_cost['route'] * Annuity_factor + maintenance_cost['route']
     }
 
     Infrastructure_subscription = cost_config["Infrastructure_subscription"]

@@ -53,17 +53,20 @@ investment cost:
   f2: 1000000 #currency
   f3: 10000000 #currency
   f4: 100000000 #currency
+  route: 1000000 #currency
 
 installation cost:
   f1: 1 #currency
   f2: 1 #currency
   f3: 1 #currency
   f4: 1 #currency
+  route: 1 #currency
 
 maintenance cost:
   f1: 1 #currency/year
   f2: 1 #currency/year
   f3: 1 #currency/year
   f4: 1 #currency/year
+  route: 1 #currency/year
 
 

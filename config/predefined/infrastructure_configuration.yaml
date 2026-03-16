@@ -35,16 +35,19 @@ investment cost:
   f2: 294000 #SEK
   f3: 778000 #SEK
   f4: 1451000 #SEK
+  route: 778000 #SEK
 
 installation cost:
   f1: 29000 #SEK
   f2: 472000 #SEK
   f3: 644000 #SEK
   f4: 1202000 #SEK
+  route: 1202000 #SEK
 
 maintenance cost:
   f1: 5000 #SEK/year
   f2: 40000 #SEK/year
   f3: 120000 #SEK/year
   f4: 240000 #SEK/year
+  route: 120000 #SEK/year
 

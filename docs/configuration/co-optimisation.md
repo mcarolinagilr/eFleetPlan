@@ -83,18 +83,21 @@ investment cost:
   f2: 1000000
   f3: 10000000
   f4: 100000000
+  route: 100000000
 
 installation cost:
   f1: 1
   f2: 1
   f3: 1
   f4: 1
+  route: 1
 
 maintenance cost:
   f1: 1           # currency/year
   f2: 1
   f3: 1
   f4: 1
+  route: 1
 ```
 
 The total annualised cost per charger is calculated as: `(investment + installation) * annuity_factor + maintenance`, where the annuity factor is derived from the discount rate and lifetime.

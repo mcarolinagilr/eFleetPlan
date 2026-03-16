@@ -4,8 +4,7 @@
 
 The predefined directory contains reusable parameter sets for schedules, vehicles, companies, and infrastructure. These are referenced by name in the run configuration files.
 
-## `schedules.yaml`
-
+##  2.4.1 Type of schedules
 The `schedules.yaml` includes schedule profiles, with the main focus on defining the departure and return times, which can vary by weekday and weekend, and whether the schedule is continuous or split into two parts. 
 Each profile name can used a `schedule_mix`.
 
@@ -15,9 +14,7 @@ Each profile name can used a `schedule_mix`.
 - `typeb` — Two-part schedule with a midday distribution terminal break
 
 Each profile contains the schedule timing parameters described in the [Schedule Generation](fleetoperation_simulation.md) configuration reference.
-
 To add a new schedule type, add a new top-level key with all required fields, but you can also use the custom option in the run_FleetSchedule_Config.yaml file.
-
 
 ```yaml
 typea:
@@ -62,50 +59,36 @@ typeb:
   prob_emergency: 0.02
 ```
 
+##  2.4.2 Type of vehicle
+  File `vehicles.yaml` includes vehicle specifications. Each top-level key is a vehicle model name that can be used in `vehicle_mix`.
+  Each vehicle model profile contains the vehicle parameters described in the [Schedule Generation](fleetoperation_simulation.md) configuration reference (consumption rates, battery capacity, charging power).
 
-## `vehicles.yaml`
+  **Available profiles:**
+  - `renault` — Based on Renault electric LCV specifications
+  - `toyota` — Based on Toyota electric LCV specifications
 
-Defines vehicle specifications. Each top-level key is a vehicle model name that can be used in `vehicle_mix`.
-
-**Available profiles:**
-
-- `renault` — Based on Renault electric LCV specifications
-- `toyota` — Based on Toyota electric LCV specifications
-
-Each profile contains the vehicle parameters described in the [Schedule Generation](fleetoperation_simulation.md) configuration reference (consumption rates, battery capacity, charging power).
+  
 
 
-
-## `companies.yaml`
-
-Defines company usage profiles (distance patterns and stop behaviour). Each top-level key is a company type that can be used in `company_type`.
-
-Company types are based on findings from a survey on light goods vehicles in Sweden conducted by Transport Analysis (2022). Types include different transport use cases such as distribution transport, line haul, and service/craft operations.
-
-Each profile contains the company parameters described in the [Schedule Generation](fleetoperation_simulation.md) configuration settings.
-
-reference: Transport Analysis, “Light goods vehicles 2022,” Stockolm, 2023.
+##  2.4.3 Type of companies
+  The file `companies.yaml` includes company profiles (distance patterns and stop behaviour). Each top-level key is a company type that can be used in `company_type`. The company types are based on findings from a survey on light goods vehicles in Sweden conducted by Transport Analysis (2022). Types include different transport use cases such as distribution transport, line haul, and service/craft operations.
+  Each company profile contains the company parameters described in the [Schedule Generation](fleetoperation_simulation.md) configuration settings. Reference: Transport Analysis, “Light goods vehicles 2022,” Stockolm, 2023.
 
 
 
-
-## `infrastructure_configuration.yaml`
-
-Defines charger specifications and costs for Package 2. This file is used when `infrastructure_configurations: predefined` is set in the optimisation run config.
-
-The structure matches the custom infrastructure parameters described in the [Co-optimisation](co-optimisation.md) configuration reference: charger power levels, investment costs, installation costs, maintenance costs, battery limits, and financial parameters.
+##  2.4.4 Type of charging infrastructures
+  The file `infrastructure_configuration.yaml` includes chargers specifications and costs for Package 2 - co-optimisation function. This file is used when `infrastructure_configurations: predefined` is set in the optimisation run config. 
+  The structure matches the custom infrastructure parameters described in the [Co-optimisation](co-optimisation.md) configuration reference: charger power levels, investment costs, installation costs, maintenance costs, battery limits, and financial parameters.
 
 
-## Adding predefined parameters
+## 2.4.5 Adding predefined parameters
 
 To add new entries to the predefined parameters:
-
 1. Open the relevant YAML file in `config/predefined/`.
 2. Add a new top-level key with all required fields, following the same structure as existing entries.
 3. Reference the new key by name in your run configuration.
 
 For example, to add a new vehicle type:
-
 ```yaml
 # In vehicles.yaml
 my_new_van:
@@ -119,7 +102,6 @@ my_new_van:
 ```
 
 Then reference it in `run_FleetSchedule_Config.yaml`:
-
 ```yaml
 fleet:
   vehicle_mix:
