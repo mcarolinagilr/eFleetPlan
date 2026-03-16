@@ -2,8 +2,7 @@
 **File:** `config/run_Optimisation_Config.yaml`
 This file defines one co-optimisation run for Package 2. Create a separate file for each scenario.
 
-## Example
-
+## 2.3.1 Example
 ```yaml
 schedule_name: "schedule_1"
 schedule_number: 1
@@ -16,10 +15,8 @@ infrastructure_configurations: predefined
 # Set to "custom" to use the parameters below instead of infrastructure_configuration.yaml
 ```
 
-## Parameters
-
+## 2.3.2 Parameters
 ### Run settings
-
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `schedule_name` | string | Name of the schedule folder in `data/Output/`. |
@@ -30,7 +27,6 @@ infrastructure_configurations: predefined
 | `infrastructure_configurations` | string | `"predefined"` to load from `predefined/infrastructure_configuration.yaml`, or `"custom"` to use parameters defined in this file. |
 
 ### Automatically resolved settings
-
 These are loaded from `env.yaml` if not specified in the run config:
 
 | Parameter | Type | Default source | Description |
@@ -42,11 +38,9 @@ These are loaded from `env.yaml` if not specified in the run config:
 | `Accumulated_Cycle_Capacity` | float | `3500.0` | Accumulated battery cycle capacity. |
 
 ### Custom infrastructure parameters
-
 When `infrastructure_configurations: custom`, the following parameters are read from this file instead of the predefined YAML:
 
 **Cost and financial parameters:**
-
 | Parameter | Type | Unit | Description |
 |-----------|------|------|-------------|
 | `lifetime` | int | years | Infrastructure economic lifetime |
@@ -57,7 +51,6 @@ When `infrastructure_configurations: custom`, the following parameters are read 
 | `Price_Fixedrateroute` | float | currency/route | Fixed cost per route charging event |
 
 **Charger power levels:**
-
 ```yaml
 Charger_Power:
   f1: 7.4      # kW
@@ -68,7 +61,6 @@ Charger_Power:
 ```
 
 **Battery limits:**
-
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `Charging_losses` | float (0, 1] | Charging efficiency (e.g. 0.964 = 96.4%) |
@@ -76,7 +68,6 @@ Charger_Power:
 | `Battery_Minimum_Limit` | float (0, 1] | Minimum SoC as fraction of capacity (e.g. 0.2 = 20%) |
 
 **Investment and maintenance costs (per charger type):**
-
 ```yaml
 investment cost:
   f1: 1000        # currency
@@ -102,10 +93,8 @@ maintenance cost:
 
 The total annualised cost per charger is calculated as: `(investment + installation) * annuity_factor + maintenance`, where the annuity factor is derived from the discount rate and lifetime.
 
-## Validation
-
+## 2.3.3 Validation
 The config loader validates:
-
 - `EVs` must be positive
 - `MIPGap` must be between 0 and 1 (exclusive)
 - `Charging_losses` must be in (0, 1]
