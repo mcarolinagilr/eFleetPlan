@@ -629,10 +629,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
+  <a href="#231-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example
+        2.3.1 Example
       
     </span>
   </a>
@@ -640,15 +640,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
+  <a href="#232-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Parameters
+        2.3.2 Parameters
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Parameters">
+    <nav class="md-nav" aria-label="2.3.2 Parameters">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -690,10 +690,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#validation" class="md-nav__link">
+  <a href="#233-validation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Validation
+        2.3.3 Validation
       
     </span>
   </a>
@@ -967,7 +967,7 @@
 <h1 id="23-co-optimisation-configurations">2.3. Co-optimisation configurations<a class="headerlink" href="#23-co-optimisation-configurations" title="Permanent link">&para;</a></h1>
 <p><strong>File:</strong> <code>config/run_Optimisation_Config.yaml</code>
 This file defines one co-optimisation run for Package 2. Create a separate file for each scenario.</p>
-<h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
+<h2 id="231-example">2.3.1 Example<a class="headerlink" href="#231-example" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="nt">schedule_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;schedule_1&quot;</span>
 <span class="nt">schedule_number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="nt">electricity_price_file</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;el_prices_2024.csv&quot;</span>
@@ -978,7 +978,7 @@ This file defines one co-optimisation run for Package 2. Create a separate file 
 <span class="nt">infrastructure_configurations</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">predefined</span>
 <span class="c1"># Set to &quot;custom&quot; to use the parameters below instead of infrastructure_configuration.yaml</span>
 </code></pre></div>
-<h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h2>
+<h2 id="232-parameters">2.3.2 Parameters<a class="headerlink" href="#232-parameters" title="Permanent link">&para;</a></h2>
 <h3 id="run-settings">Run settings<a class="headerlink" href="#run-settings" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -1067,91 +1067,30 @@ This file defines one co-optimisation run for Package 2. Create a separate file 
 </table>
 <h3 id="custom-infrastructure-parameters">Custom infrastructure parameters<a class="headerlink" href="#custom-infrastructure-parameters" title="Permanent link">&para;</a></h3>
 <p>When <code>infrastructure_configurations: custom</code>, the following parameters are read from this file instead of the predefined YAML:</p>
-<p><strong>Cost and financial parameters:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Unit</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>lifetime</code></td>
-<td>int</td>
-<td>years</td>
-<td>Infrastructure economic lifetime</td>
-</tr>
-<tr>
-<td><code>Discount_rate</code></td>
-<td>float</td>
-<td>—</td>
-<td>Discount rate for annualisation (e.g. 0.05 = 5%)</td>
-</tr>
-<tr>
-<td><code>Infrastructure_subscription</code></td>
-<td>float</td>
-<td>currency/day</td>
-<td>Daily subscription fee</td>
-</tr>
-<tr>
-<td><code>Price_FixedrateDT</code></td>
-<td>float</td>
-<td>currency/kWh</td>
-<td>Fixed electricity rate at the depot</td>
-</tr>
-<tr>
-<td><code>Demand_rate</code></td>
-<td>float</td>
-<td>currency/kW</td>
-<td>Demand charge rate</td>
-</tr>
-<tr>
-<td><code>Price_Fixedrateroute</code></td>
-<td>float</td>
-<td>currency/route</td>
-<td>Fixed cost per route charging event</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Charger power levels:</strong></p>
+<p><strong>Cost and financial parameters:</strong>
+| Parameter | Type | Unit | Description |
+|-----------|------|------|-------------|
+| <code>lifetime</code> | int | years | Infrastructure economic lifetime |
+| <code>Discount_rate</code> | float | — | Discount rate for annualisation (e.g. 0.05 = 5%) |
+| <code>Infrastructure_subscription</code> | float | currency/day | Daily subscription fee |
+| <code>Price_FixedrateDT</code> | float | currency/kWh | Fixed electricity rate at the depot |
+| <code>Demand_rate</code> | float | currency/kW | Demand charge rate |
+| <code>Price_Fixedrateroute</code> | float | currency/route | Fixed cost per route charging event |</p>
+<p><strong>Charger power levels:</strong>
 <div class="highlight"><pre><span></span><code><span class="nt">Charger_Power</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">f1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7.4</span><span class="w">      </span><span class="c1"># kW</span>
 <span class="w">  </span><span class="nt">f2</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50</span><span class="w">       </span><span class="c1"># kW</span>
 <span class="w">  </span><span class="nt">f3</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">150</span><span class="w">      </span><span class="c1"># kW</span>
 <span class="w">  </span><span class="nt">f4</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">350</span><span class="w">      </span><span class="c1"># kW</span>
 <span class="w">  </span><span class="nt">route</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">150</span><span class="w">   </span><span class="c1"># kW</span>
-</code></pre></div>
-<p><strong>Battery limits:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>Charging_losses</code></td>
-<td>float (0, 1]</td>
-<td>Charging efficiency (e.g. 0.964 = 96.4%)</td>
-</tr>
-<tr>
-<td><code>Battery_Maximum_Limit</code></td>
-<td>float (0, 1]</td>
-<td>Maximum SoC as fraction of capacity (e.g. 0.8 = 80%)</td>
-</tr>
-<tr>
-<td><code>Battery_Minimum_Limit</code></td>
-<td>float (0, 1]</td>
-<td>Minimum SoC as fraction of capacity (e.g. 0.2 = 20%)</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Investment and maintenance costs (per charger type):</strong></p>
+</code></pre></div></p>
+<p><strong>Battery limits:</strong>
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| <code>Charging_losses</code> | float (0, 1] | Charging efficiency (e.g. 0.964 = 96.4%) |
+| <code>Battery_Maximum_Limit</code> | float (0, 1] | Maximum SoC as fraction of capacity (e.g. 0.8 = 80%) |
+| <code>Battery_Minimum_Limit</code> | float (0, 1] | Minimum SoC as fraction of capacity (e.g. 0.2 = 20%) |</p>
+<p><strong>Investment and maintenance costs (per charger type):</strong>
 <div class="highlight"><pre><span></span><code><span class="nt">investment cost</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">f1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span><span class="w">        </span><span class="c1"># currency</span>
 <span class="w">  </span><span class="nt">f2</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000000</span>
@@ -1172,16 +1111,14 @@ This file defines one co-optimisation run for Package 2. Create a separate file 
 <span class="w">  </span><span class="nt">f3</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">  </span><span class="nt">f4</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">  </span><span class="nt">route</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-</code></pre></div>
+</code></pre></div></p>
 <p>The total annualised cost per charger is calculated as: <code>(investment + installation) * annuity_factor + maintenance</code>, where the annuity factor is derived from the discount rate and lifetime.</p>
-<h2 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h2>
-<p>The config loader validates:</p>
-<ul>
-<li><code>EVs</code> must be positive</li>
-<li><code>MIPGap</code> must be between 0 and 1 (exclusive)</li>
-<li><code>Charging_losses</code> must be in (0, 1]</li>
-<li><code>Battery_Maximum_Limit</code> and <code>Battery_Minimum_Limit</code> must be in (0, 1]</li>
-</ul>
+<h2 id="233-validation">2.3.3 Validation<a class="headerlink" href="#233-validation" title="Permanent link">&para;</a></h2>
+<p>The config loader validates:
+- <code>EVs</code> must be positive
+- <code>MIPGap</code> must be between 0 and 1 (exclusive)
+- <code>Charging_losses</code> must be in (0, 1]
+- <code>Battery_Maximum_Limit</code> and <code>Battery_Minimum_Limit</code> must be in (0, 1]</p>
 
 
 
