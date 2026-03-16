@@ -1,21 +1,21 @@
 /* Headings */
 h1 {
-  font: bold 2rem "Source Code Pro", monospace !important;
-  font-size: 2rem !important;
+  font: bold 1.8rem "Source Code Pro", monospace !important;
+  font-size: 1.8rem !important;
   color: #0a4850 !important;
   margin-bottom: 0.2em !important;
   margin-top: 0.8em !important;
 }
 
 h2 {
-  font-size: 1.6rem !important;
+  font-size: 1.2rem !important;
   color: #0a4850 !important;
   margin-bottom: 0.2em !important;
   margin-top: 0.5em !important;
 }
 
 h3 {
-  font-size: 1.2rem !important;
+  font-size: 0.8rem !important;
   color: #0a4850 !important;
   margin-bottom: 0.2em !important;
   margin-top: 0.3em !important;
@@ -34,5 +34,5 @@ h3 {
 
 /* Code blocks */
 .md-typeset code {
-  font-size: 0.8rem;
+  font-size: 0.6rem;
 }
