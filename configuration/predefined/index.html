@@ -707,32 +707,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vehiclesyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        vehicles.yaml
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#243-type-of-companies" class="md-nav__link">
     <span class="md-ellipsis">
       
         2.4.3 Type of companies
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#companiesyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        companies.yaml
       
     </span>
   </a>
@@ -751,21 +729,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#infrastructure_configurationyaml" class="md-nav__link">
+  <a href="#245-adding-predefined-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        infrastructure_configuration.yaml
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#adding-predefined-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Adding predefined parameters
+        2.4.5 Adding predefined parameters
       
     </span>
   </a>
@@ -1064,32 +1031,23 @@ Each profile name can used a <code>schedule_mix</code>.</p>
 <span class="w">  </span><span class="nt">prob_emergency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.02</span>
 </code></pre></div>
 <h2 id="242-type-of-vehicle">2.4.2 Type of vehicle<a class="headerlink" href="#242-type-of-vehicle" title="Permanent link">&para;</a></h2>
-<h2 id="vehiclesyaml"><code>vehicles.yaml</code><a class="headerlink" href="#vehiclesyaml" title="Permanent link">&para;</a></h2>
-<p>Defines vehicle specifications. Each top-level key is a vehicle model name that can be used in <code>vehicle_mix</code>.</p>
-<p><strong>Available profiles:</strong></p>
-<ul>
-<li><code>renault</code> — Based on Renault electric LCV specifications</li>
-<li><code>toyota</code> — Based on Toyota electric LCV specifications</li>
-</ul>
-<p>Each profile contains the vehicle parameters described in the <a href="../fleetoperation_simulation/">Schedule Generation</a> configuration reference (consumption rates, battery capacity, charging power).</p>
+<p>File <code>vehicles.yaml</code> includes vehicle specifications. Each top-level key is a vehicle model name that can be used in <code>vehicle_mix</code>.
+  Each vehicle model profile contains the vehicle parameters described in the <a href="../fleetoperation_simulation/">Schedule Generation</a> configuration reference (consumption rates, battery capacity, charging power).</p>
+<p><strong>Available profiles:</strong>
+  - <code>renault</code> — Based on Renault electric LCV specifications
+  - <code>toyota</code> — Based on Toyota electric LCV specifications</p>
 <h2 id="243-type-of-companies">2.4.3 Type of companies<a class="headerlink" href="#243-type-of-companies" title="Permanent link">&para;</a></h2>
-<h2 id="companiesyaml"><code>companies.yaml</code><a class="headerlink" href="#companiesyaml" title="Permanent link">&para;</a></h2>
-<p>Defines company usage profiles (distance patterns and stop behaviour). Each top-level key is a company type that can be used in <code>company_type</code>.</p>
-<p>Company types are based on findings from a survey on light goods vehicles in Sweden conducted by Transport Analysis (2022). Types include different transport use cases such as distribution transport, line haul, and service/craft operations.</p>
-<p>Each profile contains the company parameters described in the <a href="../fleetoperation_simulation/">Schedule Generation</a> configuration settings.</p>
-<p>reference: Transport Analysis, “Light goods vehicles 2022,” Stockolm, 2023.</p>
+<p>The file <code>companies.yaml</code> includes company profiles (distance patterns and stop behaviour). Each top-level key is a company type that can be used in <code>company_type</code>. The company types are based on findings from a survey on light goods vehicles in Sweden conducted by Transport Analysis (2022). Types include different transport use cases such as distribution transport, line haul, and service/craft operations.
+  Each company profile contains the company parameters described in the <a href="../fleetoperation_simulation/">Schedule Generation</a> configuration settings. Reference: Transport Analysis, “Light goods vehicles 2022,” Stockolm, 2023.</p>
 <h2 id="244-type-of-charging-infrastructures">2.4.4 Type of charging infrastructures<a class="headerlink" href="#244-type-of-charging-infrastructures" title="Permanent link">&para;</a></h2>
-<h2 id="infrastructure_configurationyaml"><code>infrastructure_configuration.yaml</code><a class="headerlink" href="#infrastructure_configurationyaml" title="Permanent link">&para;</a></h2>
-<p>Defines charger specifications and costs for Package 2. This file is used when <code>infrastructure_configurations: predefined</code> is set in the optimisation run config.</p>
-<p>The structure matches the custom infrastructure parameters described in the <a href="../co-optimisation/">Co-optimisation</a> configuration reference: charger power levels, investment costs, installation costs, maintenance costs, battery limits, and financial parameters.</p>
-<h2 id="adding-predefined-parameters">Adding predefined parameters<a class="headerlink" href="#adding-predefined-parameters" title="Permanent link">&para;</a></h2>
-<p>To add new entries to the predefined parameters:</p>
-<ol>
-<li>Open the relevant YAML file in <code>config/predefined/</code>.</li>
-<li>Add a new top-level key with all required fields, following the same structure as existing entries.</li>
-<li>Reference the new key by name in your run configuration.</li>
-</ol>
-<p>For example, to add a new vehicle type:</p>
+<p>The file <code>infrastructure_configuration.yaml</code> includes chargers specifications and costs for Package 2 - co-optimisation function. This file is used when <code>infrastructure_configurations: predefined</code> is set in the optimisation run config. 
+  The structure matches the custom infrastructure parameters described in the <a href="../co-optimisation/">Co-optimisation</a> configuration reference: charger power levels, investment costs, installation costs, maintenance costs, battery limits, and financial parameters.</p>
+<h2 id="245-adding-predefined-parameters">2.4.5 Adding predefined parameters<a class="headerlink" href="#245-adding-predefined-parameters" title="Permanent link">&para;</a></h2>
+<p>To add new entries to the predefined parameters:
+1. Open the relevant YAML file in <code>config/predefined/</code>.
+2. Add a new top-level key with all required fields, following the same structure as existing entries.
+3. Reference the new key by name in your run configuration.</p>
+<p>For example, to add a new vehicle type:
 <div class="highlight"><pre><span></span><code><span class="c1"># In vehicles.yaml</span>
 <span class="nt">my_new_van</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">consumption_mean</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.25</span>
@@ -1099,13 +1057,13 @@ Each profile name can used a <code>schedule_mix</code>.</p>
 <span class="w">  </span><span class="nt">total_cons_clip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50</span>
 <span class="w">  </span><span class="nt">battery_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
 <span class="w">  </span><span class="nt">charging_power</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
-</code></pre></div>
-<p>Then reference it in <code>run_FleetSchedule_Config.yaml</code>:</p>
+</code></pre></div></p>
+<p>Then reference it in <code>run_FleetSchedule_Config.yaml</code>:
 <div class="highlight"><pre><span></span><code><span class="nt">fleet</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">vehicle_mix</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">my_new_van</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
 <span class="w">    </span><span class="nt">renault</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
-</code></pre></div>
+</code></pre></div></p>
 
 
 

@@ -601,10 +601,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
+  <a href="#221-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example
+        2.2.1 Example
       
     </span>
   </a>
@@ -612,82 +612,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
+  <a href="#222-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Parameters
+        2.2.2 Parameters
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Parameters">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#top-level" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Top-level
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fleet-section" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        fleet section
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#schedule-parameters-predefined-or-custom" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Schedule parameters (predefined or custom)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#vehicle-parameters-predefined-or-custom" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Vehicle parameters (predefined or custom)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#company-parameters-predefined-or-custom" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Company parameters (predefined or custom)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#validation" class="md-nav__link">
+  <a href="#223-validation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Validation
+        2.2.3 Validation
       
     </span>
   </a>
@@ -989,7 +928,7 @@
 <h1 id="22-fleet-operation-simulation-configurations">2.2. Fleet Operation simulation configurations<a class="headerlink" href="#22-fleet-operation-simulation-configurations" title="Permanent link">&para;</a></h1>
 <p><strong>File:</strong> <code>config/run_FleetSchedule_Config.yaml</code>
 This file defines one fleet profile for Package 1. Create a separate file for different profiles, if you want to generate different fleets profiles schedules (e.g. <code>run_schedule1.yaml</code>, <code>run_schedule2.yaml</code>).</p>
-<h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
+<h2 id="221-example">2.2.1 Example<a class="headerlink" href="#221-example" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="nt">schedule_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;schedule_1&quot;</span>
 
 <span class="nt">fleet</span><span class="p">:</span>
@@ -1027,25 +966,12 @@ This file defines one fleet profile for Package 1. Create a separate file for di
 
 <span class="w">  </span><span class="c1"># ... (see full parameter list below)</span>
 </code></pre></div>
-<h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h2>
-<h3 id="top-level">Top-level<a class="headerlink" href="#top-level" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>schedule_name</code></td>
-<td>string</td>
-<td>Label for this run. Used as the output folder name under <code>data/Output/</code>.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="fleet-section"><code>fleet</code> section<a class="headerlink" href="#fleet-section" title="Permanent link">&para;</a></h3>
+<h2 id="222-parameters">2.2.2 Parameters<a class="headerlink" href="#222-parameters" title="Permanent link">&para;</a></h2>
+<p>### Top-level
+  | Parameter | Type | Description |
+  |-----------|------|-------------|
+  | <code>schedule_name</code> | string | Label for this run. Used as the output folder name under <code>data/Output/</code>. |</p>
+<p>### <code>fleet</code> section</p>
 <table>
 <thead>
 <tr>
@@ -1077,7 +1003,7 @@ This file defines one fleet profile for Package 1. Create a separate file for di
 </tr>
 </tbody>
 </table>
-<h3 id="schedule-parameters-predefined-or-custom">Schedule parameters (predefined or custom)<a class="headerlink" href="#schedule-parameters-predefined-or-custom" title="Permanent link">&para;</a></h3>
+<p>### Schedule parameters (predefined or custom)</p>
 <p>These are the fields in <code>predefined/schedules.yaml</code> or in the <code>custom_schedule</code> block. All times are in decimal hours (e.g. 8.5 = 08:30).</p>
 <p><strong>Weekday departure/return (Type A and B):</strong></p>
 <table>
@@ -1196,7 +1122,7 @@ This file defines one fleet profile for Package 1. Create a separate file for di
 </tr>
 </tbody>
 </table>
-<h3 id="vehicle-parameters-predefined-or-custom">Vehicle parameters (predefined or custom)<a class="headerlink" href="#vehicle-parameters-predefined-or-custom" title="Permanent link">&para;</a></h3>
+<p>### Vehicle parameters (predefined or custom)</p>
 <table>
 <thead>
 <tr>
@@ -1243,7 +1169,7 @@ This file defines one fleet profile for Package 1. Create a separate file for di
 </tr>
 </tbody>
 </table>
-<h3 id="company-parameters-predefined-or-custom">Company parameters (predefined or custom)<a class="headerlink" href="#company-parameters-predefined-or-custom" title="Permanent link">&para;</a></h3>
+<p>### Company parameters (predefined or custom)</p>
 <table>
 <thead>
 <tr>
@@ -1305,14 +1231,12 @@ This file defines one fleet profile for Package 1. Create a separate file for di
 </tr>
 </tbody>
 </table>
-<h2 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h2>
-<p>The config loader validates all parameters on load using Pydantic:</p>
-<ul>
-<li><code>n_vehicles</code> must be positive</li>
-<li><code>schedule_mix</code> and <code>vehicle_mix</code> must each sum to <code>n_vehicles</code></li>
-<li>All vehicle numeric parameters must be positive</li>
-<li>If any mix entry is set to <code>custom</code>, the corresponding <code>custom_*</code> block must be present</li>
-</ul>
+<h2 id="223-validation">2.2.3 Validation<a class="headerlink" href="#223-validation" title="Permanent link">&para;</a></h2>
+<p>The config loader validates all parameters on load using Pydantic:
+- <code>n_vehicles</code> must be positive
+- <code>schedule_mix</code> and <code>vehicle_mix</code> must each sum to <code>n_vehicles</code>
+- All vehicle numeric parameters must be positive
+- If any mix entry is set to <code>custom</code>, the corresponding <code>custom_*</code> block must be present</p>
 
 
 
