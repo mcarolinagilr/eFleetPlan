@@ -7,8 +7,8 @@ Co-optimisation tool of charging infrastructure investment and electric fleet op
 Carolina Gil Ribeiro and Jagruti Thakur
 
 ## License
-This software is licensed under the Creative Commons Attribution–NonCommercial–ShareAlike 4.0 International License (CC BY-NC-SA 4.0).  
-See the [LICENSE](./LICENSE) file or visit [https://creativecommons.org/licenses/by-nc-sa/4.0/](https://creativecommons.org/licenses/by-nc-sa/4.0/) for details.
+This software is licensed under the MIT License.  
+See the [LICENSE](./LICENSE) file for details.
 
 
 ## Citation
