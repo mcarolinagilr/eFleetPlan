@@ -665,18 +665,7 @@
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#schedulesyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        schedules.yaml
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="schedules.yaml">
+    <nav class="md-nav" aria-label="2.4.1 Type of schedules">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -979,7 +968,6 @@
 <p><strong>Directory:</strong> all the configuration setting already defined are located in <code>config/predefined/</code></p>
 <p>The predefined directory contains reusable parameter sets for schedules, vehicles, companies, and infrastructure. These are referenced by name in the run configuration files.</p>
 <h2 id="241-type-of-schedules">2.4.1 Type of schedules<a class="headerlink" href="#241-type-of-schedules" title="Permanent link">&para;</a></h2>
-<h2 id="schedulesyaml"><code>schedules.yaml</code><a class="headerlink" href="#schedulesyaml" title="Permanent link">&para;</a></h2>
 <p>The <code>schedules.yaml</code> includes schedule profiles, with the main focus on defining the departure and return times, which can vary by weekday and weekend, and whether the schedule is continuous or split into two parts. 
 Each profile name can used a <code>schedule_mix</code>.</p>
 <h3 id="available-profiles"><strong>Available profiles:</strong><a class="headerlink" href="#available-profiles" title="Permanent link">&para;</a></h3>
@@ -987,8 +975,8 @@ Each profile name can used a <code>schedule_mix</code>.</p>
 <li><code>typea</code> — Continuous single-trip schedule (depart once, return once)</li>
 <li><code>typeb</code> — Two-part schedule with a midday distribution terminal break</li>
 </ul>
-<p>Each profile contains the schedule timing parameters described in the <a href="../fleetoperation_simulation/">Schedule Generation</a> configuration reference.</p>
-<p>To add a new schedule type, add a new top-level key with all required fields, but you can also use the custom option in the run_FleetSchedule_Config.yaml file.</p>
+<p>Each profile contains the schedule timing parameters described in the <a href="../fleetoperation_simulation/">Schedule Generation</a> configuration reference.
+To add a new schedule type, add a new top-level key with all required fields, but you can also use the custom option in the run_FleetSchedule_Config.yaml file.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">typea</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">dep_mean_wd</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
 <span class="w">  </span><span class="nt">dep_dev_wd</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>

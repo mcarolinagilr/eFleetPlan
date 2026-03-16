@@ -3,16 +3,22 @@ h1 {
   font: bold 2rem "Source Code Pro", monospace !important;
   font-size: 2rem !important;
   color: #0a4850 !important;
+  margin-bottom: 0.2em !important;
+  margin-top: 0.8em !important;
 }
 
 h2 {
   font-size: 1.6rem !important;
   color: #0a4850 !important;
+  margin-bottom: 0.2em !important;
+  margin-top: 0.5em !important;
 }
 
 h3 {
   font-size: 1.2rem !important;
   color: #0a4850 !important;
+  margin-bottom: 0.2em !important;
+  margin-top: 0.3em !important;
 }
 
 /* Body text size */
