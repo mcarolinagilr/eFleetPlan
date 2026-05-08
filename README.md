@@ -102,16 +102,16 @@ Defines global settings such as file paths, simulation period, time resolution, 
 Controls how fleet operational schedules are generated: the schedule name, number of vehicles, schedule and vehicle mix, and company type. 
 User can use predefined parameters or define custom values.
 
-Predefined values are loaded from `config/predefined/`.
+Predefined values are loaded from `config/_1_predefined/`.
 
 ### Optimisation — `run_Optimisation_Config.yaml`
 
 Defines settings for the Co-optimisation model: which schedule to optimise, fleet size, solver gap tolerance, and infrastructure configuration (Cost and power parameters). User can use predefined parameters or define custom values. 
 
-Predefined values are loaded from `config/predefined/infrastructure_configuration.yaml`.
+Predefined values are loaded from `config/_1_predefined/infrastructure_configuration.yaml`.
 
 
-### Predefined parameter sets — `config/predefined/`
+### Predefined parameter sets — `config/_1_predefined/`
 
 Contains reusable definitions for vehicles, schedules, companies, and infrastructure. These can be extended with new entries as needed.
 
