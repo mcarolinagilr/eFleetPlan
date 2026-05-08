@@ -4,7 +4,7 @@ Config loader for the co-optimisation Package (Package 2).
 Reads:
   - run_opt.yaml: run-level settings (dates, fleet, solver)
   - infrastructure_configuration.yaml: power/battery parameters + infrastructure costs
-  - env.yaml (optional): environment config with simulation dates
+  - env.yaml (optional): environment config with optimisation dates
 
 """
 
@@ -180,9 +180,9 @@ def load_opt_config(run_yaml: str,
     
     if env_yaml:
         env_raw = _read_yaml(env_yaml)
-        sim = env_raw.get('simulation', {})          
-        run_raw.setdefault('opt_start_date', sim.get('start_date'))
-        run_raw.setdefault('opt_end_date', sim.get('end_date'))
+        opt = env_raw.get('optimisation', {})          
+        run_raw.setdefault('opt_start_date', opt.get('start_date'))
+        run_raw.setdefault('opt_end_date', opt.get('end_date'))
     
     run = RunOptConfig(**run_raw)
 
