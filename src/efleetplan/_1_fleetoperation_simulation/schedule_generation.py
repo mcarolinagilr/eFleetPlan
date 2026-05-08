@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
 
-from config.0_supportfiles.config_loader_schedule import (
+from config.config_loader_schedule import (
     CompanyConfig,
     EnvironmentConfig,
     PredefinedLibrary,
@@ -47,7 +47,7 @@ STOP_IMPACT_ON_RETURN = 0.1            # Each stop adds ~6 min to return time
 # =============================================================================
 
 class ScheduleGenerator:
-    """Generates a probabilistic driving/charging schedule for one vehicle.
+    """Generates a probabilistic driving schedule for one vehicle.
 
     Parameters
     ----------
