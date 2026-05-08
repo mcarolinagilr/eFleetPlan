@@ -47,6 +47,8 @@ python -m efleetplan
 
 If the command runs without errors, everything is correctly installed — including Gurobi.
 
+### Initial test : A first test can be performed by running the notebooks in the folder Test.
+
 ## Project structure
 
 ```
@@ -128,7 +130,7 @@ jupyter lab
 
 Run all cells. The notebook will load the configuration, generate schedules, validate them, and produce visualisations. Outputs are saved to `data/Output/schedule_1/`.
 
-### Step 4 — Configure the co-optimisation model
+### Step 4 — Configure the Co-optimisation model
 
 Edit `config/run_Optimisation_Config.yaml`:
 

@@ -105,7 +105,7 @@ def optimisation(opt_config, cost_config, power_config):
     m.BatMax    = Param(initialize=float(power_config["Battery_Maximum_Limit"]))
     m.BatMin    = Param(initialize=float(power_config["Battery_Minimum_Limit"]))
 
-    # Charger power levels
+    # Charger power levels (Python constants are fine)
     Charger_Power = power_config["Charger_Power"]
 
     # Annualization factor
@@ -119,8 +119,7 @@ def optimisation(opt_config, cost_config, power_config):
         'f2': float(cost_config["Infrastructure_cost"]['f2']) * annuity + float(cost_config["maintenance_cost"]['f2']),
         'f3': float(cost_config["Infrastructure_cost"]['f3']) * annuity + float(cost_config["maintenance_cost"]['f3']),
         'f4': float(cost_config["Infrastructure_cost"]['f4']) * annuity + float(cost_config["maintenance_cost"]['f4']),
-        'route': float(cost_config["Infrastructure_cost"]['route']) * annuity + float(cost_config["maintenance_cost"]['route']),
-        
+        'route': float(cost_config["Infrastructure_cost"]['route']) * annuity + float(cost_config["maintenance_cost"]['route'])
     }
 
     m.Infrastructure_subscription = Param(initialize=float(cost_config["Infrastructure_subscription"]))
@@ -245,7 +244,7 @@ def optimisation(opt_config, cost_config, power_config):
     
     @m.Constraint(m.t)
     def Max_Power_Constraint_rule(m, t):
-        return quicksum(m.DT_Grid_purchase[b, t] for b in m.b) <= m.Max_Power
+        return quicksum(m.DT_Grid_purchase[b, t] for b in m.b)/m.delta_t <= m.Max_Power
 
     # -----------------------------
     # 2) Charger count constraints
@@ -311,7 +310,7 @@ def optimisation(opt_config, cost_config, power_config):
         return m.Storage_level[b, t] >= m.BatMin * m.Battery_Limitation[b]
 
 
-    # ------------ Objective ------------
+    # ------------ Objective function------------
     def obj_rule(m):
         infra = (
             m.CS_f1 * Annualized_Infrastructure_cost['f1'] +
@@ -336,11 +335,12 @@ def optimisation(opt_config, cost_config, power_config):
 
         demand = m.Max_Power * m.Demand_rate
 
-        # Penalize the NUMBER of route-charging events
-        infrastructure_route = quicksum(m.Charging_route[b, t] * 10 for b in m.b for t in m.t) + m.CS_route * Annualized_Infrastructure_cost['route']*0.1
+        # Keep your penalty if you want to discourage route charging
+        Infrastructure_route = quicksum(m.Charging_route[b, t] for b in m.b for t in m.t) + m.CS_route*Annualized_Infrastructure_cost['route']
 
 
-        return infra + energy_dt + energy_route + demand + infrastructure_route
+        return infra + energy_dt + energy_route + demand + Infrastructure_route
+
     m.objective = Objective(rule=obj_rule, sense=pyo.minimize)
 
     # ------------ Solver ------------

@@ -1,6 +1,6 @@
 # 2.3. Co-optimisation configurations
 **File:** `config/run_Optimisation_Config.yaml`
-This file defines one co-optimisation run for Package 2. Create a separate file for each scenario.
+This file defines one Co-optimisation run for Package 2. Create a separate file for each scenario.
 
 ## 2.3.1 Example
 ```yaml

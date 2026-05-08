@@ -6,7 +6,7 @@ Package 2 solves a mixed-integer cost-minimisation problem that jointly determin
 
 ## What the Package does
 
-Given the fleet schedules from Package 1, the co-optimisation model decides:
+Given the fleet schedules from Package 1, the Co-optimisation model decides:
 
 - **How many chargers** of each type to install at the depot (f1, f2, f3, f4) and on route
 - **When and how much** each vehicle charges at each timestep

@@ -1,5 +1,5 @@
 """
-Config loader for the co-optimisation Package (Package 2).
+Config loader for the Co-optimisation Package (Package 2).
 
 Reads:
   - run_opt.yaml: run-level settings (dates, fleet, solver)
@@ -8,11 +8,17 @@ Reads:
 
 """
 
+from pathlib import Path
 import os
 import yaml
 import pandas as pd
 from pydantic import BaseModel, field_validator
 from typing import Dict, Optional
+
+PROJECT_ROOT = Path(__file__).resolve()
+
+while PROJECT_ROOT.name != "EFLEETPLAN":
+    PROJECT_ROOT = PROJECT_ROOT.parent
 
 
 # ---------------------------------------------------------------------------
@@ -150,8 +156,7 @@ def _build_cost_dicts(infra_raw):
 
 def load_opt_config(run_yaml: str,
                     infra_yaml: str,
-                    env_yaml: str = None,
-                    project_root: str = None):
+                    env_yaml: str = None):
     """
     Load and validate both YAML files, then build the dictionaries
     that ``optimisation()`` expects.
@@ -167,10 +172,7 @@ def load_opt_config(run_yaml: str,
     opt_config, cost_config, power_charge_config, run
     """
     
-    if project_root is None:
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
- 
+     
     run_raw   = _read_yaml(run_yaml)
 
     if run_raw.get('infrastructure_configurations') == 'custom':
@@ -209,8 +211,8 @@ def load_opt_config(run_yaml: str,
     # --- Build opt_config ---
     sname = run.schedule_name
 
-    input_folder  = os.path.join(project_root, "data", "Input")
-    output_folder = os.path.join(project_root, "data", "Output", sname)
+    input_folder  = PROJECT_ROOT / "data" / "Input"
+    output_folder = PROJECT_ROOT / "data" / "Output" / sname
 
 
     def _pivot_table(schedule_csv):
@@ -223,7 +225,7 @@ def load_opt_config(run_yaml: str,
             'PowerRate_Limitation': df.pivot(index='date', columns='VehicleID', values='PowerRating_kW'),
         }
 
-    schedule_csv = os.path.join(project_root, "data", "Output", f"{sname}", f"{sname}.csv")
+    schedule_csv = PROJECT_ROOT / "data" / "Output" / f"{sname}" / f"{sname}.csv"
     vehicle_data = _pivot_table(schedule_csv)
 
     opt_config = {
@@ -238,8 +240,7 @@ def load_opt_config(run_yaml: str,
         "input_folder":   input_folder,
 
         # Load the CSV inputs produced by Fleet Operation simulation
-        "electricity_price_grid": pd.read_csv(
-            os.path.join(input_folder, run.electricity_price_file)
+        "electricity_price_grid": pd.read_csv(input_folder / run.electricity_price_file
         ),
 
         # Load the CSV inputs produced by Fleet Operation simulation

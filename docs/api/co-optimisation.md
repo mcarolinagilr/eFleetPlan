@@ -12,7 +12,7 @@ def optimisation(
 ) -> tuple[ConcreteModel, dict, dict, dict]
 ```
 
-This function build and solve the charging infrastructure co-optimisation model.
+This function build and solve the charging infrastructure Co-optimisation model.
 It constructs a Pyomo `ConcreteModel` with all parameters, variables, constraints, and the objective function, then solves it using Gurobi or other choosen solver.
 
 **Parameters:**

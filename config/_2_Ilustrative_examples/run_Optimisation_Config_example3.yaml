@@ -1,5 +1,5 @@
 # =============================================================================
-# CO-OPTIMISATION RUN CONFIGURATION
+# Co-optimisation RUN CONFIGURATION
 # =============================================================================
 
 # One file per schedule to optimise (e.g. run_opt_schedule1.yaml, run_opt_schedule2.yaml, ...)

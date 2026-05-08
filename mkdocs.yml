@@ -60,12 +60,12 @@ nav:
   - "2. Configuration settings":
       - "2.1. Environment": configuration/environment.md
       - "2.2. Fleet Operation simulation": configuration/fleetoperation_simulation.md
-      - "2.3. Co-optimisation": configuration/co-optimisation.md
+      - "2.3. Co-optimisation": configuration/Co-optimisation.md
       - "2.4. Predefined parameters": configuration/predefined.md
   - "3. Software functionalities":
       - "3.1. Config Loaders": api/config-loaders.md
       - "3.2. Fleet operation modelling": api/fleetoperation_modelling.md
-      - "3.3. Co-optimisation": api/co-optimisation.md
+      - "3.3. Co-optimisation": api/Co-optimisation.md
       - "3.4. Visualisation": api/visualisation.md
   - "4. Examples & Tutorials": examples.md
 

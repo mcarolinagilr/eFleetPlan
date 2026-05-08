@@ -168,7 +168,7 @@ def graph_vehicles(folder_path, file_path, n_days, n_vehicles):
             ax.axvline(x=pos, linestyle='dashed', color='gray', linewidth=0.6)
 
         # Style
-        ax.set_ylabel(f'V{vehicle_id}\nEnergy (kWh)', fontsize=14)
+        ax.set_ylabel(f'V{vehicle_id}\nCharging/discharging energy per timestep (kWh)', fontsize=14)
         ax.grid(True, axis='y', linewidth=0.5, color='black')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
@@ -177,7 +177,7 @@ def graph_vehicles(folder_path, file_path, n_days, n_vehicles):
         # Add secondary axis for Storage Level
         ax2 = ax.twinx()
         ax2.plot(vehicle_data['TimeIndex'], vehicle_data['Storage Level'], label='SOC', linewidth=1.5, color='green', linestyle='dashed')
-        ax2.set_ylabel('Storage Level (kWh)', fontsize=16)
+        ax2.set_ylabel('Battery Storage Level SOC (kWh)', fontsize=16)
         ax2.spines['top'].set_visible(False)
         ax2.grid(False)
         ax2.set_ylim(0, 40)

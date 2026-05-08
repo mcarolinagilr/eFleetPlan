@@ -10,7 +10,7 @@ This file aims to load all YAML configurations that will support the Fleet Opera
         env, run, predefined = load_config(
         env_yaml=os.path.join(config_dir, 'env.yaml'), # location of environment parameters
         run_yaml=os.path.join(config_dir, 'run.yaml'), # location of Fleet Operation simulation parameters
-        predefined_dir=os.path.join(config_dir, 'predefined'), # location of predefined parameters
+        predefined_dir=os.path.join(config_dir, '_1_predefined'), # location of predefined parameters
     )
 """
 

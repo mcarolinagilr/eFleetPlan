@@ -86,7 +86,7 @@ fleet:
 ## Example 3 — Custom vehicle, company parameters and Infrastructure parameters
 
 In the example, user defines the vehicle and the type of company to generate different schedules.
-Next, user also define the infrastructure costs and charging power to include in the co-optimisation model.
+Next, user also define the infrastructure costs and charging power to include in the Co-optimisation model.
 
 ### Case study parameters configuration 
 

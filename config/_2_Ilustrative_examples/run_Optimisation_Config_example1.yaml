@@ -6,18 +6,17 @@
 # Infrastructure and power parameters are loaded separately from infrastructure_configuration.yaml, 
 # but here you can also use custom parameters for the optimisation run (e.g. MIPGap, time horizon, etc.)
 
-# Main advice is to create a new file for each run.
 
-schedule_name: "schedule_1"
+schedule_name: "Example_1"
 schedule_number: 1
 electricity_price_file: "el_prices_2024.csv"
 
 
 # Fleet
-EVs: 10                    # Number of electric vehicles
+EVs: 50                    # Number of electric vehicles
 
 # Solver
-MIPGap: 0.005                # MIP optimality gap (between 0 and 1)
+MIPGap: 0.01                # MIP optimality gap (between 0 and 1)
 
 infrastructure_configurations: predefined  # "predefined" or "custom". 
 #If "custom", will look for infrastructure parameters defined above in this file, instead of infrastructure_configuration.yaml
@@ -53,20 +52,17 @@ investment cost:
   f2: 1000000 #currency
   f3: 10000000 #currency
   f4: 100000000 #currency
-  route: 1000000 #currency
 
 installation cost:
   f1: 1 #currency
   f2: 1 #currency
   f3: 1 #currency
   f4: 1 #currency
-  route: 1 #currency
 
 maintenance cost:
   f1: 1 #currency/year
   f2: 1 #currency/year
   f3: 1 #currency/year
   f4: 1 #currency/year
-  route: 1 #currency/year
 
 

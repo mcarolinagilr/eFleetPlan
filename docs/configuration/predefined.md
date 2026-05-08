@@ -77,8 +77,8 @@ typeb:
 
 
 ##  2.4.4 Type of charging infrastructures
-  The file `infrastructure_configuration.yaml` includes chargers specifications and costs for Package 2 - co-optimisation function. This file is used when `infrastructure_configurations: predefined` is set in the optimisation run config. 
-  The structure matches the custom infrastructure parameters described in the [Co-optimisation](co-optimisation.md) configuration reference: charger power levels, investment costs, installation costs, maintenance costs, battery limits, and financial parameters.
+  The file `infrastructure_configuration.yaml` includes chargers specifications and costs for Package 2 - Co-optimisation function. This file is used when `infrastructure_configurations: predefined` is set in the optimisation run config. 
+  The structure matches the custom infrastructure parameters described in the [Co-optimisation](Co-optimisation.md) configuration reference: charger power levels, investment costs, installation costs, maintenance costs, battery limits, and financial parameters.
 
 
 ## 2.4.5 Adding predefined parameters

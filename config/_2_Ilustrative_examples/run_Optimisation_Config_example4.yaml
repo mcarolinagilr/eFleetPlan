@@ -1,5 +1,5 @@
 # =============================================================================
-# CO-OPTIMISATION RUN CONFIGURATION
+# Co-optimisation RUN CONFIGURATION
 # =============================================================================
 
 # One file per schedule to optimise (e.g. run_opt_schedule1.yaml, run_opt_schedule2.yaml, ...)
@@ -7,13 +7,13 @@
 # but here you can also use custom parameters for the optimisation run (e.g. MIPGap, time horizon, etc.)
 
 
-schedule_name: "Example_2"
-schedule_number: 2
+schedule_name: "Example_4"
+schedule_number: 4
 electricity_price_file: "el_prices_2024.csv"
 
 
 # Fleet
-EVs: 50                    # Number of electric vehicles
+EVs: 30                    # Number of electric vehicles
 
 # Solver
 MIPGap: 0.01                # MIP optimality gap (between 0 and 1)

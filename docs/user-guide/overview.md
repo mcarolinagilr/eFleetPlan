@@ -32,7 +32,7 @@ All parameters are included in the `config/` directory. User can/should edit the
 |------|---------|
 | `env.yaml` | Global environment: time dates, seed, file paths |
 | `run_FleetSchedule_Config.yaml` | LCV fleet definition for operation schedules generation |
-| `run_Optimisation_Config.yaml` | Settings for the co-optimisation |
+| `run_Optimisation_Config.yaml` | Settings for the Co-optimisation |
 
 See the [Configuration settings](../configuration/predefined.md) for a full description of parameter predefined.
 
@@ -53,7 +53,7 @@ See the [Predefined configuration](../configuration/predefined.md) for a full de
 Place these files in `data/Input/` before running:
 
 - **Energy consumption factor file** — a CSV with columns `date` and `Energy Consumption Factor`, providing a daily multiplier for energy consumption (e.g. this file aims to account for seasonal temperature effects). - For package 1
-- **Electricity price file** — a CSV with columns `date` (or `Date`) and `Elect_price`, providing hourly electricity prices for the co-optimisation of infrastructure and operation costs. - For package 2.
+- **Electricity price file** — a CSV with columns `date` (or `Date`) and `Elect_price`, providing hourly electricity prices for the Co-optimisation of infrastructure and operation costs. - For package 2.
 
 ## Output data
 

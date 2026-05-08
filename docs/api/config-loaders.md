@@ -85,7 +85,7 @@ Pydantic models holding the individual parameter sets. See the [Configuration Re
 
 ## Optimisation Config Loader
 
-**Package:** `config.config_loader_optimisation`
+**Package:** `config._0_supportfiles.config_loader_optimisation`
 
 ### `load_opt_config`
 

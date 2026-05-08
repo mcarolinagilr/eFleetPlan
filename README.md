@@ -13,7 +13,7 @@ See the [LICENSE](./LICENSE) file for details.
 
 ## Citation
 If you use eFleetPlan, please cite:
-**Gil Ribeiro, C and Thakur, J, eFleetPlan: Co-Optimisation tool of Charging Infrastructure Investment and Fleet Operations, 2025. DOI:xxxxxxx
+**Gil Ribeiro, C and Thakur, J, eFleetPlan: Co-optimisation tool of Charging Infrastructure Investment and Fleet Operations, 2025. DOI:xxxxxxx
 
 ## Project structure
 
@@ -106,7 +106,7 @@ Predefined values are loaded from `config/predefined/`.
 
 ### Optimisation — `run_Optimisation_Config.yaml`
 
-Defines settings for the co-optimisation model: which schedule to optimise, fleet size, solver gap tolerance, and infrastructure configuration (Cost and power parameters). User can use predefined parameters or define custom values. 
+Defines settings for the Co-optimisation model: which schedule to optimise, fleet size, solver gap tolerance, and infrastructure configuration (Cost and power parameters). User can use predefined parameters or define custom values. 
 
 Predefined values are loaded from `config/predefined/infrastructure_configuration.yaml`.
 

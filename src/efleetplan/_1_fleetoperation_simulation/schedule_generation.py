@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
 
-from config.config_loader_schedule import (
+from config._0_supportfiles.config_loader_schedule import (
     CompanyConfig,
     EnvironmentConfig,
     PredefinedLibrary,
