@@ -14,10 +14,10 @@ electricity_price_file: "el_prices_2024.csv"
 
 
 # Fleet
-EVs: 10                    # Number of electric vehicles
+EVs: 50                    # Number of electric vehicles
 
 # Solver
-MIPGap: 0.005                # MIP optimality gap (between 0 and 1)
+MIPGap: 0.01                # MIP optimality gap (between 0 and 1)
 
 infrastructure_configurations: predefined  # "predefined" or "custom". 
 #If "custom", will look for infrastructure parameters defined above in this file, instead of infrastructure_configuration.yaml

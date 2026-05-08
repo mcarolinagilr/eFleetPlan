@@ -121,7 +121,11 @@ def optimisation(opt_config, cost_config, power_config):
         'f4': float(cost_config["Infrastructure_cost"]['f4']) * annuity + float(cost_config["maintenance_cost"]['f4']),
         'route': float(cost_config["Infrastructure_cost"]['route']) * annuity + float(cost_config["maintenance_cost"]['route'])
     }
+    
+    horizon_factor = days / 366
 
+    Horizon_Infrastructure_cost = {k: v * horizon_factor for k, v in Annualized_Infrastructure_cost.items()}
+    
     m.Infrastructure_subscription = Param(initialize=float(cost_config["Infrastructure_subscription"]))
     m.Price_FixedrateDT           = Param(initialize=float(cost_config["Price_FixedrateDT"]))
     m.Price_Fixedrateroute        = Param(initialize=float(cost_config["Price_Fixedrateroute"]))
@@ -308,17 +312,16 @@ def optimisation(opt_config, cost_config, power_config):
     @m.Constraint(m.b, m.t)
     def Min_Storage_rule(m, b, t):
         return m.Storage_level[b, t] >= m.BatMin * m.Battery_Limitation[b]
-
+    
 
     # ------------ Objective function------------
     def obj_rule(m):
         infra = (
-            m.CS_f1 * Annualized_Infrastructure_cost['f1'] +
-            m.CS_f2 * Annualized_Infrastructure_cost['f2'] +
-            m.CS_f3 * Annualized_Infrastructure_cost['f3'] +
-            m.CS_f4 * Annualized_Infrastructure_cost['f4'] +
-            m.Infrastructure_subscription * days
-        )
+            m.CS_f1 * Horizon_Infrastructure_cost['f1'] +
+            m.CS_f2 * Horizon_Infrastructure_cost['f2'] +
+            m.CS_f3 * Horizon_Infrastructure_cost['f3'] +
+            m.CS_f4 * Horizon_Infrastructure_cost['f4'] +
+            m.Infrastructure_subscription * days)
 
         energy_dt = quicksum(
             (m.Charge_pertime_f1[b, t] / m.Ch_losses * (m.Price[t] + m.Price_FixedrateDT)+
@@ -336,7 +339,7 @@ def optimisation(opt_config, cost_config, power_config):
         demand = m.Max_Power * m.Demand_rate
 
         # Keep your penalty if you want to discourage route charging
-        Infrastructure_route = quicksum(m.Charging_route[b, t] for b in m.b for t in m.t) + m.CS_route*Annualized_Infrastructure_cost['route']
+        Infrastructure_route = quicksum(m.Charging_route[b, t] for b in m.b for t in m.t) + m.CS_route*Horizon_Infrastructure_cost['route']
 
 
         return infra + energy_dt + energy_route + demand + Infrastructure_route
@@ -359,18 +362,20 @@ def optimisation(opt_config, cost_config, power_config):
     print(f"Solve completed in {time.time() - t_start:.1f} seconds")
     print(f"Termination condition: {result.solver.termination_condition}")
 
-    return m, Price, EV_availability, Distance_km
+    return m, Price, EV_availability, Distance_km, days
 
 
 
 
-def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_file_pathB, csv_file_pathC, cost_config, power_config):
+def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_file_pathB, csv_file_pathC, cost_config, power_config, days):
     
     # Parameters
     Ch_losses = power_config["Charging_losses"]  # Charging efficiency
     Infrastructure_life = cost_config["Infrastructure_life"]
     r = cost_config["Discount_rate"]
     Annuity_factor = (r * (1 + r) ** Infrastructure_life) / ((1 + r) ** Infrastructure_life - 1)
+    
+    Demand_rate = cost_config["Demand_rate"]
 
     Infrastructure_cost = cost_config["Infrastructure_cost"]
     
@@ -384,7 +389,10 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
         'f4': Infrastructure_cost['f4'] * Annuity_factor + maintenance_cost['f4'],
         'route': Infrastructure_cost['route'] * Annuity_factor + maintenance_cost['route']
     }
+    horizon_factor = days / 366
 
+    Horizon_Infrastructure_cost = {k: v * horizon_factor for k, v in Annualized_Infrastructure_cost.items()}
+    
     Infrastructure_subscription = cost_config["Infrastructure_subscription"]
     Price_FixedrateDT = cost_config["Price_FixedrateDT"]
     Price_Fixedrateroute = cost_config["Price_Fixedrateroute"]
@@ -439,62 +447,111 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
 
-        # Charging Stations f1
-        writer.writerow({'Category': 'f1 CS', 'Description': 'Chargers number', 
-                 'Value': pyo.value(m.CS_f1)})
+        # ---------- Pre-compute costs ----------
+        f1_infra = pyo.value(m.CS_f1) * Horizon_Infrastructure_cost['f1']
+        f2_infra = pyo.value(m.CS_f2) * Horizon_Infrastructure_cost['f2']
+        f3_infra = pyo.value(m.CS_f3) * Horizon_Infrastructure_cost['f3']
+        f4_infra = pyo.value(m.CS_f4) * Horizon_Infrastructure_cost['f4']
+        route_infra = pyo.value(m.CS_route) * Horizon_Infrastructure_cost['route']
 
-        writer.writerow({'Category': 'f1 CS', 'Description': 'Infrastructure Cost', 
-                 'Value': pyo.value(m.CS_f1) * Annualized_Infrastructure_cost['f1']})
+        f1_elec = sum(
+            pyo.value(m.Charge_pertime_f1[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT)
+            for b in m.b for t in m.t
+        )
 
-        writer.writerow({'Category': 'f1 CS', 'Description': 'Electricity Cost', 'Value': sum(pyo.value(m.Charge_pertime_f1[b, t])  / Ch_losses * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t)})
+        f2_elec = sum(
+            pyo.value(m.Charge_pertime_f2[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT)
+            for b in m.b for t in m.t
+        )
 
-        # Charging Stations f2
-        writer.writerow({'Category': f'f2 CS {Charger_Power["f2"]}kW', 'Description': 'Chargers number', 
-            'Value': pyo.value(m.CS_f2)}) 
+        f3_elec = sum(
+            pyo.value(m.Charge_pertime_f3[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT)
+            for b in m.b for t in m.t
+        )
 
-        writer.writerow({'Category': f'f2 CS {Charger_Power["f2"]}kW', 'Description': 'Infrastructure Cost', 
-            'Value': pyo.value(m.CS_f2) * Annualized_Infrastructure_cost['f2']})
+        f4_elec = sum(
+            pyo.value(m.Charge_pertime_f4[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT)
+            for b in m.b for t in m.t
+        )
 
-        writer.writerow({'Category': f'f2 CS {Charger_Power["f2"]}kW', 'Description': 'Electricity Cost', 
-            'Value': sum(pyo.value(m.Charge_pertime_f2[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT) 
-                    for b in m.b for t in m.t)})
+        route_elec = sum(
+            pyo.value(m.Charge_pertime_route[b, t]) / Ch_losses * Price_Fixedrateroute
+            for b in m.b for t in m.t
+        )
 
-        # Charging Stations f3
-        writer.writerow({'Category': f'f3 CS {Charger_Power["f3"]}kW', 'Description': 'Chargers number', 
-            'Value': pyo.value(m.CS_f3)}) 
+        dt_infra = f1_infra + f2_infra + f3_infra + f4_infra
+        dt_elec = f1_elec + f2_elec + f3_elec + f4_elec
 
-        writer.writerow({'Category': f'f3 CS {Charger_Power["f3"]}kW', 'Description': 'Infrastructure Cost', 
-            'Value': pyo.value(m.CS_f3) * Annualized_Infrastructure_cost['f3']})
+        subscription_cost = Infrastructure_subscription * days
+        demand_cost = pyo.value(m.Max_Power) * Demand_rate
 
-        writer.writerow({'Category': f'f3 CS {Charger_Power["f3"]}kW', 'Description': 'Electricity Cost', 
-            'Value': sum(pyo.value(m.Charge_pertime_f3[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT) 
-                    for b in m.b for t in m.t)})
+        total_infra = dt_infra + route_infra + subscription_cost
+        total_elec = dt_elec + route_elec
+        total_cost = total_infra + total_elec + demand_cost
 
-        # Charging Stations f4
-        writer.writerow({'Category': f'f4 CS {Charger_Power["f4"]}kW', 'Description': 'Chargers number', 
-            'Value': pyo.value(m.CS_f4)}) 
+        # ---------- f1 ----------
+        writer.writerow({'Category': 'f1 CS', 'Description': 'Chargers number',
+                        'Value': pyo.value(m.CS_f1)})
+        writer.writerow({'Category': 'f1 CS', 'Description': 'Infrastructure Cost',
+                        'Value': f1_infra})
+        writer.writerow({'Category': 'f1 CS', 'Description': 'Electricity Cost',
+                        'Value': f1_elec})
 
-        writer.writerow({'Category': f'f4 CS {Charger_Power["f4"]}kW', 'Description': 'Infrastructure Cost', 
-            'Value': pyo.value(m.CS_f4) * Annualized_Infrastructure_cost['f4']})
+        # ---------- f2 ----------
+        writer.writerow({'Category': f'f2 CS {Charger_Power["f2"]}kW', 'Description': 'Chargers number',
+                        'Value': pyo.value(m.CS_f2)})
+        writer.writerow({'Category': f'f2 CS {Charger_Power["f2"]}kW', 'Description': 'Infrastructure Cost',
+                        'Value': f2_infra})
+        writer.writerow({'Category': f'f2 CS {Charger_Power["f2"]}kW', 'Description': 'Electricity Cost',
+                        'Value': f2_elec})
 
-        writer.writerow({'Category': f'f4 CS {Charger_Power["f4"]}kW', 'Description': 'Electricity Cost', 
-            'Value': sum(pyo.value(m.Charge_pertime_f4[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT) 
-                    for b in m.b for t in m.t)})
-            
-        writer.writerow({'Category': 'DT', 'Description': 'Infrastructure Cost', 'Value': (
-            pyo.value(m.CS_f1) * Annualized_Infrastructure_cost['f1'] +
-            pyo.value(m.CS_f2) * Annualized_Infrastructure_cost['f2'] +
-            pyo.value(m.CS_f3) * Annualized_Infrastructure_cost['f3'] +
-            pyo.value(m.CS_f4) * Annualized_Infrastructure_cost['f4']
-        )})
-        writer.writerow({'Category': 'DT', 'Description': 'Electricity Cost', 'Value': sum((pyo.value(m.DT_Grid_purchase[b, t]) * (Price[t] + Price_FixedrateDT) for b in m.b for t in m.t))})
-        writer.writerow({'Category': 'DT', 'Description': 'Chargers number', 'Value': pyo.value(m.CS_f1) + pyo.value(m.CS_f2) + pyo.value(m.CS_f3) + pyo.value(m.CS_f4)})
-        writer.writerow({'Category': 'DT', 'Description': 'Max Power [kW]', 'Value': pyo.value(m.Max_Power)})
+        # ---------- f3 ----------
+        writer.writerow({'Category': f'f3 CS {Charger_Power["f3"]}kW', 'Description': 'Chargers number',
+                        'Value': pyo.value(m.CS_f3)})
+        writer.writerow({'Category': f'f3 CS {Charger_Power["f3"]}kW', 'Description': 'Infrastructure Cost',
+                        'Value': f3_infra})
+        writer.writerow({'Category': f'f3 CS {Charger_Power["f3"]}kW', 'Description': 'Electricity Cost',
+                        'Value': f3_elec})
 
-        writer.writerow({'Category': 'route CS', 'Description': 'Chargers number', 'Value': pyo.value(m.CS_route)})
-        #writer.writerow({'Category': 'route CS', 'Description': 'Times', 'Value': sum(pyo.value(m.Charging_route[b, t]) for b in m.b for t in m.t)})
-        writer.writerow({'Category': 'route CS', 'Description': 'Electricity Cost', 'Value': sum(pyo.value(m.Charge_pertime_route[b, t]) * Price_Fixedrateroute for b in m.b for t in m.t)})
+        # ---------- f4 ----------
+        writer.writerow({'Category': f'f4 CS {Charger_Power["f4"]}kW', 'Description': 'Chargers number',
+                        'Value': pyo.value(m.CS_f4)})
+        writer.writerow({'Category': f'f4 CS {Charger_Power["f4"]}kW', 'Description': 'Infrastructure Cost',
+                        'Value': f4_infra})
+        writer.writerow({'Category': f'f4 CS {Charger_Power["f4"]}kW', 'Description': 'Electricity Cost',
+                        'Value': f4_elec})
 
+        # ---------- DT ----------
+        writer.writerow({'Category': 'DT', 'Description': 'Infrastructure Cost',
+                        'Value': dt_infra})
+        writer.writerow({'Category': 'DT', 'Description': 'Electricity Cost',
+                        'Value': dt_elec})
+        writer.writerow({'Category': 'DT', 'Description': 'Chargers number',
+                        'Value': pyo.value(m.CS_f1) + pyo.value(m.CS_f2) + pyo.value(m.CS_f3) + pyo.value(m.CS_f4)})
+        writer.writerow({'Category': 'DT', 'Description': 'Max Power [kW]',
+                        'Value': pyo.value(m.Max_Power)})
+        writer.writerow({'Category': 'DT', 'Description': 'Demand Cost',
+                        'Value': demand_cost})
+        writer.writerow({'Category': 'DT', 'Description': 'Infrastructure Subscription Cost',
+                        'Value': subscription_cost})
+
+        # ---------- Route ----------
+        writer.writerow({'Category': 'route CS', 'Description': 'Chargers number',
+                        'Value': pyo.value(m.CS_route)})
+        writer.writerow({'Category': 'route CS', 'Description': 'Infrastructure Cost',
+                        'Value': route_infra})
+        writer.writerow({'Category': 'route CS', 'Description': 'Electricity Cost',
+                        'Value': route_elec})
+
+        # ---------- Total ----------
+        writer.writerow({'Category': 'Total', 'Description': 'Infrastructure Cost',
+                        'Value': total_infra})
+        writer.writerow({'Category': 'Total', 'Description': 'Electricity Cost',
+                        'Value': total_elec})
+        writer.writerow({'Category': 'Total', 'Description': 'Demand Cost',
+                        'Value': demand_cost})
+        writer.writerow({'Category': 'Total', 'Description': 'Total Costs',
+                        'Value': total_cost})
     # 3. EV descriptive file
     with open(csv_file_pathC,  mode='w', newline='') as file:
         writer = csv.writer(file)

@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from pathlib import Path
 from matplotlib import rcParams
 
 from datetime import datetime
@@ -26,14 +27,28 @@ def identify_resolution(df):
     return step_col, steps_per_day, delta_t
 
 def process_folder(folder_path, filename_pattern):
-    
-    files = [f for f in os.listdir(folder_path) if f.endswith(filename_pattern.split('*')[-1])]
-    if not files:
+    """
+    Process one or more '*_Main_variables_results.csv' files in a folder and
+    create per-step max/avg/sum CSVs.
+
+    Accepts either strings or pathlib.Path objects for both arguments.
+    """
+    folder_path = Path(folder_path)
+
+    # Support either a glob pattern (recommended) or a simple suffix filter.
+    pattern_str = str(filename_pattern)
+    if any(ch in pattern_str for ch in ["*", "?", "["]):
+        file_paths = sorted(folder_path.glob(Path(pattern_str).name))
+    else:
+        suffix = Path(pattern_str).name
+        file_paths = sorted([p for p in folder_path.iterdir() if p.is_file() and p.name.endswith(suffix)])
+
+    if not file_paths:
         print(f"No file matching {filename_pattern} found in {folder_path}.")
         return
 
-    for filename in files:
-        file_path = os.path.join(folder_path, filename)
+    for file_path in file_paths:
+        filename = file_path.name
 
         # Read the file into a DataFrame (adjust separator if needed)
         data = pd.read_csv(file_path)
@@ -50,9 +65,9 @@ def process_folder(folder_path, filename_pattern):
         initial_numbers = filename.split('_')[0]
 
         # Save results back to the folder with the initial numbers in the filenames
-        max_file_path = os.path.join(folder_path, f'{initial_numbers}_max_variable_per_step.csv')
-        avg_file_path = os.path.join(folder_path, f'{initial_numbers}_avg_variable_per_step.csv')
-        sum_file_path = os.path.join(folder_path, f'{initial_numbers}_sum_variable_per_step.csv')
+        max_file_path = folder_path / f"{initial_numbers}_max_variable_per_step.csv"
+        avg_file_path = folder_path / f"{initial_numbers}_avg_variable_per_step.csv"
+        sum_file_path = folder_path / f"{initial_numbers}_sum_variable_per_step.csv"
 
         max_per_step.to_csv(max_file_path, index=True)
         avg_per_step.to_csv(avg_file_path, index=True)
@@ -168,7 +183,7 @@ def graph_vehicles(folder_path, file_path, n_days, n_vehicles):
             ax.axvline(x=pos, linestyle='dashed', color='gray', linewidth=0.6)
 
         # Style
-        ax.set_ylabel(f'V{vehicle_id}\nCharging/discharging energy per timestep (kWh)', fontsize=14)
+        ax.set_ylabel(f'V{vehicle_id}\nCharging/discharging \nenergy per timestep (kWh)', fontsize=14)
         ax.grid(True, axis='y', linewidth=0.5, color='black')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
@@ -177,7 +192,7 @@ def graph_vehicles(folder_path, file_path, n_days, n_vehicles):
         # Add secondary axis for Storage Level
         ax2 = ax.twinx()
         ax2.plot(vehicle_data['TimeIndex'], vehicle_data['Storage Level'], label='SOC', linewidth=1.5, color='green', linestyle='dashed')
-        ax2.set_ylabel('Battery Storage Level SOC (kWh)', fontsize=16)
+        ax2.set_ylabel('Battery Storage Level \nSOC (kWh)', fontsize=16)
         ax2.spines['top'].set_visible(False)
         ax2.grid(False)
         ax2.set_ylim(0, 40)

@@ -9,12 +9,19 @@ seed: 42
 
 simulation:
   start_date: "2024-01-01 00:00:00"
-  end_date: "2024-01-05 23:00:00"
+  end_date: "2024-12-31 23:00:00"
+  freq: "h" 
+  
+optimisation:
+  start_date: "2024-01-01 00:00:00"
+  end_date: "2024-12-31 23:00:00"
   freq: "h"  # frequency string: 'h' = hourly
+ # frequency string: 'h' = hourly
 
 paths:
-  consumption_factor_file: "/data/Input/consumption_factor_2024.csv"
-  output_base: "/data/Output"
-  input_for_optimisation: "/data/Output"
+  # Use paths relative to this YAML file (Windows-safe)
+  consumption_factor_file: "../data/Input/consumption_factor_2024.csv"
+  output_base: "../data/Output"
+  input_for_optimisation: "../data/Output"
   # in case is the output of the fleet operation simulation package put the same folder of output_base
   

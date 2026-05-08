@@ -15,10 +15,29 @@ import pandas as pd
 from pydantic import BaseModel, field_validator
 from typing import Dict, Optional
 
-PROJECT_ROOT = Path(__file__).resolve()
+def _find_project_root(start: Path) -> Path:
+    """
+    Robust project-root discovery.
 
-while PROJECT_ROOT.name != "EFLEETPLAN":
-    PROJECT_ROOT = PROJECT_ROOT.parent
+    Avoids infinite loops on Windows when folder casing differs
+    (e.g. 'eFleetPlan' vs 'EFLEETPLAN') or when the marker folder name
+    isn't present in the path.
+    """
+    start = start.resolve()
+    for parent in [start, *start.parents]:
+        # Primary marker: repository has a src/ folder
+        if (parent / "src").exists():
+            return parent
+        # Secondary markers
+        if (parent / "pyproject.toml").exists():
+            return parent
+        if (parent / "setup.py").exists():
+            return parent
+    return start
+
+
+# Discover repo root from this file's location
+PROJECT_ROOT = _find_project_root(Path(__file__).resolve())
 
 
 # ---------------------------------------------------------------------------
@@ -180,11 +199,24 @@ def load_opt_config(run_yaml: str,
     else:
         infra_raw = _read_yaml(infra_yaml)
     
+    # Fill optimisation window from env.yaml only if run_yaml didn't provide it.
+    # NOTE: dict.setdefault() will happily set a key to None, which then fails
+    # Pydantic validation for required string fields.
     if env_yaml:
         env_raw = _read_yaml(env_yaml)
-        opt = env_raw.get('optimisation', {})          
-        run_raw.setdefault('opt_start_date', opt.get('start_date'))
-        run_raw.setdefault('opt_end_date', opt.get('end_date'))
+        # Backwards/TEST compatibility: some env files use `simulation:` only.
+        opt = env_raw.get("optimisation") or env_raw.get("simulation") or {}
+        if not run_raw.get("opt_start_date"):
+            run_raw["opt_start_date"] = opt.get("start_date")
+        if not run_raw.get("opt_end_date"):
+            run_raw["opt_end_date"] = opt.get("end_date")
+
+    if not run_raw.get("opt_start_date") or not run_raw.get("opt_end_date"):
+        raise ValueError(
+            "Missing optimisation window: 'opt_start_date' and/or 'opt_end_date'. "
+            "Set them in the run YAML, or set 'optimisation.start_date' and "
+            "'optimisation.end_date' in env YAML."
+        )
     
     run = RunOptConfig(**run_raw)
 

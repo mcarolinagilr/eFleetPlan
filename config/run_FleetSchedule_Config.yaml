@@ -9,19 +9,19 @@
 schedule_name: "schedule_1"
 
 fleet:
-  n_vehicles: 10
+  n_vehicles: 50
 
   # How many vehicles use each schedule type (must sum to n_vehicles).
   # Names must match keys in predefined/schedules.yaml (or "custom")
   schedule_mix:
-    typea: 10
+    typea: 50
     typeb: 0
     custom_with_with_break: 0
 
   # How many vehicles of each vehicle model (must sum to n_vehicles).
   # Names must match keys in predefined/vehicles.yaml (or "custom").
   vehicle_mix:
-    renault: 10
+    renault: 50
     toyota: 0
     custom: 0
 
