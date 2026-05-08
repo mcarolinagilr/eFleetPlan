@@ -53,27 +53,31 @@ If the command runs without errors, everything is correctly installed — includ
 
 ```
 eFleetPlan/
-├── config/                            # All configuration (YAML)
-│   ├── predefined/                    # Reusable parameter sets
+├── config/                                     # All configuration (YAML)
+│   ├── _0_supportfiles/                        # Reusable parameter sets
+│   │   ├── config_loader_schedule.py           # Config loader — schedule Package
+│   │   ├── config_loader_optimisation.py       # Config loader — optimisation Package
+│   ├── _1_predefined/                          # Reusable parameter sets
 │   │   ├── companies.yaml
 │   │   ├── infrastructure_configuration.yaml
 │   │   ├── schedules.yaml
 │   │   └── vehicles.yaml
-│   ├── config_loader_schedule.py      # Config loader — schedule Package
-│   ├── config_loader_optimisation.py  # Config loader — optimisation Package
-│   ├── env.yaml                       # Environment settings
-│   ├── run_FleetSchedule_Config.yaml  # Schedule generation run config
-│   └── run_Optimisation_Config.yaml   # Optimisation run config
+│   ├── _2_Ilustrative_examples/                # Files to reproduce the examples of software x paper
+│   ├── env.yaml                                # Environment settings
+│   ├── run_FleetSchedule_Config.yaml           # Schedule generation run config
+│   └── run_Optimisation_Config.yaml            # Optimisation run config
 ├── data/
-│   ├── Input/                         # User-provided input files
-│   └── Output/                        # Generated outputs
+│   ├── Input/                                  # User-provided input files
+│   └── Output/                                 # Generated outputs
+├── docs/                                       # eFleetPlan documentation
+├── site/                                       # Folder with files for the documentation site
 ├── notebooks/
 │   ├── 1_Fleet_Operation_simulation.ipynb
 │   └── 2_Co-optimisation.ipynb
-├── src/efleetplan/                    # Source code
+├── src/efleetplan/                             # Source code
 │   ├── _1_schedule/
 │   └── _2_optimisation/
-└── docs/                              # This documentation
+└── test/                                       # files to perform a simples and fast test
 ```
 
 ## Input data
