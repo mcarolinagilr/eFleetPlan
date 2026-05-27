@@ -15,10 +15,6 @@
         <link rel="canonical" href="https://mcarolinagilr.github.io/eFleetPlan/api/co-optimisation/">
       
       
-        <link rel="prev" href="../fleetoperation_modelling/">
-      
-      
-        <link rel="next" href="../visualisation/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>3.3. Co-optimisation - eFleetPlan Documentation</title>
+        <title>Co-optimisation functions - eFleetPlan Documentation</title>
       
     
     
@@ -120,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              3.3. Co-optimisation
+              Co-optimisation functions
             
           </span>
         </div>
@@ -569,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../configuration/co-optimisation/" class="md-nav__link">
+      <a href="../../configuration/Co-optimisation.md" class="md-nav__link">
         
   
   
@@ -629,8 +625,6 @@
       
   
   
-    
-  
   
   
     
@@ -643,11 +637,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
@@ -668,7 +664,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -739,37 +735,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.3. Co-optimisation
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../Co-optimisation.md" class="md-nav__link">
         
   
   
@@ -785,81 +754,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#optimisation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        optimisation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#prepare_data" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        prepare_data
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#save_results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        save_results
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#calculate_days" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        calculate_days
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#model-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Model structure
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -956,7 +850,7 @@
     <span class="n">power_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ConcreteModel</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span>
 </code></pre></div>
-<p>This function build and solve the charging infrastructure co-optimisation model.
+<p>This function build and solve the charging infrastructure Co-optimisation model.
 It constructs a Pyomo <code>ConcreteModel</code> with all parameters, variables, constraints, and the objective function, then solves it using Gurobi or other choosen solver.</p>
 <p><strong>Parameters:</strong></p>
 <ul>

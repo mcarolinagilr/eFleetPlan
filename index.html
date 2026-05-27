@@ -577,7 +577,7 @@
   
   
     <li class="md-nav__item">
-      <a href="configuration/co-optimisation/" class="md-nav__link">
+      <a href="configuration/Co-optimisation.md" class="md-nav__link">
         
   
   
@@ -750,7 +750,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/co-optimisation/" class="md-nav__link">
+      <a href="api/Co-optimisation.md" class="md-nav__link">
         
   
   
@@ -862,15 +862,15 @@
 <h2 id="key-features">Key features<a class="headerlink" href="#key-features" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>FLeet operation silulation - a probabilistic schedule generation</strong> — creates realistic hourly driving and charging patterns for heterogeneous fleets using configurable statistical distributions.</li>
-<li><strong>Infrastructure co-optimisation module</strong> — solves a mixed-integer linear programme (MILP) that simultaneously determines the optimal number and type of chargers, charging schedules, and energy procurement strategy.</li>
+<li><strong>Infrastructure Co-optimisation module</strong> — solves a mixed-integer linear programme (MILP) that simultaneously determines the optimal number and type of chargers, charging schedules, and energy procurement strategy.</li>
 <li><strong>YAML-based configuration</strong> — all parameters are defined in human-readable YAML files. No code editing required to set up and run scenarios.</li>
-<li><strong>Modular architecture</strong> — Package 1 (schedule generation) and Package 2 (co-optimisation) can be run independently or together.</li>
+<li><strong>Modular architecture</strong> — Package 1 (schedule generation) and Package 2 (Co-optimisation) can be run independently or together.</li>
 <li><strong>Built-in visualisation</strong> — automatic generation of summary graphs for both packages.</li>
 </ul>
 <h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
 <p>eFleetPlan consists of two packages:</p>
 <p><strong>Package 1 — Fleet operation simulation</strong> generates operational schedules for each vehicle in a fleet. It samples departure/return times, distances, energy consumption, and stop patterns from configurable probability distributions, producing hourly time-series over a full simulation period.</p>
-<p><strong>Package 2 — Charging infrastructure co-optimisation</strong> takes the generated schedules and solves a cost-minimisation problem using the Gurobi solver. The model jointly decides the number and type of charging stations (slow, fast, ultra-fast, and route chargers), the hourly charging profile for each vehicle, and the energy procurement from the grid — minimising total annualised infrastructure and electricity costs.</p>
+<p><strong>Package 2 — Charging infrastructure Co-optimisation</strong> takes the generated schedules and solves a cost-minimisation problem using the Gurobi solver. The model jointly decides the number and type of charging stations (slow, fast, ultra-fast, and route chargers), the hourly charging profile for each vehicle, and the energy procurement from the grid — minimising total annualised infrastructure and electricity costs.</p>
 <h2 id="quick-start">Quick start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/carolinagr/eFleetPlan.git
 <span class="nb">cd</span><span class="w"> </span>eFleetPlan
@@ -884,7 +884,7 @@ pip<span class="w"> </span>install<span class="w"> </span>.
 <h2 id="citation">Citation<a class="headerlink" href="#citation" title="Permanent link">&para;</a></h2>
 <p>If you use eFleetPlan, please cite:</p>
 <blockquote>
-<p>Gil Ribeiro, C. and Thakur, J., <em>eFleetPlan: Co-Optimisation Tool for Charging Infrastructure Investment and Fleet Operations</em>, 2025. DOI: <em>forthcoming</em></p>
+<p>Gil Ribeiro, C. and Thakur, J., <em>eFleetPlan: Co-optimisation Tool for Charging Infrastructure Investment and Fleet Operations</em>, 2025. DOI: <em>forthcoming</em></p>
 </blockquote>
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
 <p>This software is licensed under the MIT License.<br />

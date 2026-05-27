@@ -413,6 +413,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#initial-test-a-first-test-can-be-performed-by-running-the-notebooks-in-the-folder-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initial test : A first test can be performed by running the notebooks in the folder Test.
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -489,7 +500,7 @@
   <a href="#step-4-configure-the-co-optimisation-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 4 — Configure the co-optimisation model
+        Step 4 — Configure the Co-optimisation model
       
     </span>
   </a>
@@ -793,7 +804,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/co-optimisation/" class="md-nav__link">
+      <a href="../configuration/Co-optimisation.md" class="md-nav__link">
         
   
   
@@ -966,7 +977,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/co-optimisation/" class="md-nav__link">
+      <a href="../api/Co-optimisation.md" class="md-nav__link">
         
   
   
@@ -1104,29 +1115,34 @@ venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>efleetplan
 </code></pre></div>
 <p>If the command runs without errors, everything is correctly installed — including Gurobi.</p>
+<h3 id="initial-test-a-first-test-can-be-performed-by-running-the-notebooks-in-the-folder-test">Initial test : A first test can be performed by running the notebooks in the folder Test.<a class="headerlink" href="#initial-test-a-first-test-can-be-performed-by-running-the-notebooks-in-the-folder-test" title="Permanent link">&para;</a></h3>
 <h2 id="project-structure">Project structure<a class="headerlink" href="#project-structure" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>eFleetPlan/
-├── config/                            # All configuration (YAML)
-│   ├── predefined/                    # Reusable parameter sets
+├── config/                                     # All configuration (YAML)
+│   ├── _0_supportfiles/                        # Reusable parameter sets
+│   │   ├── config_loader_schedule.py           # Config loader — schedule Package
+│   │   ├── config_loader_optimisation.py       # Config loader — optimisation Package
+│   ├── _1_predefined/                          # Reusable parameter sets
 │   │   ├── companies.yaml
 │   │   ├── infrastructure_configuration.yaml
 │   │   ├── schedules.yaml
 │   │   └── vehicles.yaml
-│   ├── config_loader_schedule.py      # Config loader — schedule Package
-│   ├── config_loader_optimisation.py  # Config loader — optimisation Package
-│   ├── env.yaml                       # Environment settings
-│   ├── run_FleetSchedule_Config.yaml  # Schedule generation run config
-│   └── run_Optimisation_Config.yaml   # Optimisation run config
+│   ├── _2_Ilustrative_examples/                # Files to reproduce the examples of software x paper
+│   ├── env.yaml                                # Environment settings
+│   ├── run_FleetSchedule_Config.yaml           # Schedule generation run config
+│   └── run_Optimisation_Config.yaml            # Optimisation run config
 ├── data/
-│   ├── Input/                         # User-provided input files
-│   └── Output/                        # Generated outputs
+│   ├── Input/                                  # User-provided input files
+│   └── Output/                                 # Generated outputs
+├── docs/                                       # eFleetPlan documentation
+├── site/                                       # Folder with files for the documentation site
 ├── notebooks/
 │   ├── 1_Fleet_Operation_simulation.ipynb
 │   └── 2_Co-optimisation.ipynb
-├── src/efleetplan/                    # Source code
+├── src/efleetplan/                             # Source code
 │   ├── _1_schedule/
 │   └── _2_optimisation/
-└── docs/                              # This documentation
+└── test/                                       # files to perform a simples and fast test
 </code></pre></div>
 <h2 id="input-data">Input data<a class="headerlink" href="#input-data" title="Permanent link">&para;</a></h2>
 <p>Before running, place the following files in <code>data/Input/</code>:</p>
@@ -1179,7 +1195,7 @@ venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate
 <div class="highlight"><pre><span></span><code>jupyter<span class="w"> </span>lab
 </code></pre></div>
 <p>Run all cells. The notebook will load the configuration, generate schedules, validate them, and produce visualisations. Outputs are saved to <code>data/Output/schedule_1/</code>.</p>
-<h3 id="step-4-configure-the-co-optimisation-model">Step 4 — Configure the co-optimisation model<a class="headerlink" href="#step-4-configure-the-co-optimisation-model" title="Permanent link">&para;</a></h3>
+<h3 id="step-4-configure-the-co-optimisation-model">Step 4 — Configure the Co-optimisation model<a class="headerlink" href="#step-4-configure-the-co-optimisation-model" title="Permanent link">&para;</a></h3>
 <p>Edit <code>config/run_Optimisation_Config.yaml</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">schedule_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;schedule_1&quot;</span>
 <span class="nt">schedule_number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>

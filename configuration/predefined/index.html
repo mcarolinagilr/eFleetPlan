@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://mcarolinagilr.github.io/eFleetPlan/configuration/predefined/">
       
       
-        <link rel="prev" href="../co-optimisation/">
+        <link rel="prev" href="../fleetoperation_simulation/">
       
       
         <link rel="next" href="../../api/config-loaders/">
@@ -569,7 +569,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../co-optimisation/" class="md-nav__link">
+      <a href="../Co-optimisation.md" class="md-nav__link">
         
   
   
@@ -861,7 +861,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/co-optimisation/" class="md-nav__link">
+      <a href="../../api/Co-optimisation.md" class="md-nav__link">
         
   
   
@@ -1028,8 +1028,8 @@ To add a new schedule type, add a new top-level key with all required fields, bu
 <p>The file <code>companies.yaml</code> includes company profiles (distance patterns and stop behaviour). Each top-level key is a company type that can be used in <code>company_type</code>. The company types are based on findings from a survey on light goods vehicles in Sweden conducted by Transport Analysis (2022). Types include different transport use cases such as distribution transport, line haul, and service/craft operations.
   Each company profile contains the company parameters described in the <a href="../fleetoperation_simulation/">Schedule Generation</a> configuration settings. Reference: Transport Analysis, “Light goods vehicles 2022,” Stockolm, 2023.</p>
 <h2 id="244-type-of-charging-infrastructures">2.4.4 Type of charging infrastructures<a class="headerlink" href="#244-type-of-charging-infrastructures" title="Permanent link">&para;</a></h2>
-<p>The file <code>infrastructure_configuration.yaml</code> includes chargers specifications and costs for Package 2 - co-optimisation function. This file is used when <code>infrastructure_configurations: predefined</code> is set in the optimisation run config. 
-  The structure matches the custom infrastructure parameters described in the <a href="../co-optimisation/">Co-optimisation</a> configuration reference: charger power levels, investment costs, installation costs, maintenance costs, battery limits, and financial parameters.</p>
+<p>The file <code>infrastructure_configuration.yaml</code> includes chargers specifications and costs for Package 2 - Co-optimisation function. This file is used when <code>infrastructure_configurations: predefined</code> is set in the optimisation run config. 
+  The structure matches the custom infrastructure parameters described in the <a href="Co-optimisation.md">Co-optimisation</a> configuration reference: charger power levels, investment costs, installation costs, maintenance costs, battery limits, and financial parameters.</p>
 <h2 id="245-adding-predefined-parameters">2.4.5 Adding predefined parameters<a class="headerlink" href="#245-adding-predefined-parameters" title="Permanent link">&para;</a></h2>
 <p>To add new entries to the predefined parameters:
 1. Open the relevant YAML file in <code>config/predefined/</code>.
