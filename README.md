@@ -109,6 +109,8 @@ Prompts for a destination folder and copies editable YAML templates there (`env.
 
 **Step 3 — Use it**
 
+Package 1 — generate fleet operation schedules:
+
 ```python
 from efleetplan import load_scheduler_config, generate_fleet_schedules
 
@@ -117,6 +119,29 @@ env, run, predefined = load_scheduler_config(
     run_yaml="config/run_FleetSchedule_Config.yaml",
 )
 schedule = generate_fleet_schedules(env, run, predefined)
+```
+
+Package 2 — co-optimise charging infrastructure and operations, using the same `env` object so both packages agree on where inputs/outputs live:
+
+```python
+from efleetplan import load_opt_config, optimisation, save_results
+
+opt_config, cost_config, power_config, opt_run = load_opt_config(
+    run_yaml="config/run_Optimisation_Config.yaml",
+    infra_yaml="config/_1_predefined/infrastructure_configuration.yaml",
+    env_yaml="config/env.yaml",
+    input_folder=env.consumption_factor_file.parent,
+    output_folder=env.output_base,
+)
+m, Price, EV_availability, Distance_km, days = optimisation(opt_config, cost_config, power_config)
+
+save_results(
+    m, Price, EV_availability, Distance_km,
+    csv_file_pathA="results_main_variables.csv",
+    csv_file_pathB="results_summary.csv",
+    csv_file_pathC="results_per_EV.csv",
+    cost_config=cost_config, power_config=power_config, days=days,
+)
 ```
 
 ## eFleetPlan Configurations
