@@ -39,6 +39,7 @@ dependencies = [
 Repository = "https://github.com/mcarolinagilr/efleetplan"
 Issues = "https://github.com/mcarolinagilr/efleetplan/issues"
 Paper = "https://doi.org/10.1016/j.softx.2026.102748"
+Zenodo = "https://doi.org/10.5281/zenodo.19051172"
 
 [project.scripts]
 efleetplan-start = "efleetplan._cli:main"

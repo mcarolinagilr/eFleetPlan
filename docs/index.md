@@ -42,9 +42,11 @@ Carolina Gil Ribeiro and Jagruti Thakur
 
 ## Citation
 
-If you use eFleetPlan, please cite:
+If you use eFleetPlan, please cite the paper:
 
 > Gil Ribeiro, C. and Thakur, J., *eFleetPlan: Co-optimisation of charging infrastructure investment and electric fleet operations*, SoftwareX, 2026, Article 102748. DOI: [10.1016/j.softx.2026.102748](https://doi.org/10.1016/j.softx.2026.102748)
+
+To cite this specific software release, use the Zenodo archive DOI: [10.5281/zenodo.19051172](https://doi.org/10.5281/zenodo.19051172)
 
 ## License
 
