@@ -23,12 +23,13 @@ To cite this specific software release, use the Zenodo archive DOI: [10.5281/zen
 ```
 eFleetPlan/
 ├── config/                          # All configuration files
-│   ├── predefined/                  # Predefined parameter sets
+│   ├── _1_predefined/               # Predefined parameter sets
 │   │   ├── companies.yaml
 │   │   ├── infrastructure_configuration.yaml
 │   │   ├── schedules.yaml
 │   │   └── vehicles.yaml
-│   ├── env.yaml                     # Environment settings 
+│   ├── _2_Ilustrative_examples/     # Configs reproducing the paper's examples
+│   ├── env.yaml                     # Environment settings
 │   ├── run_FleetSchedule_Config.yaml# Schedule generation run configuration
 │   └── run_Optimisation_Config.yaml # Optimisation run configuration
 ├── data/
@@ -38,16 +39,18 @@ eFleetPlan/
 ├── notebooks/
 │   ├── 1_Fleet_Operation_simulation.ipynb
 │   └── 2_Co-optimisation.ipynb
-├── src/
-│   └── efleetplan/
-│       ├── _1_schedule/             # Fleet operation simulation package
-│       │   ├── generate_graphs.py
-│       │   └── schedule_generation.py
-│       └── _2_optimisation/         # Co-optimisation package
-│           ├── co_optimisation.py
-│           └── optimisation_graphs.py
+├── src/efleetplan/                  # Source code (installable package)
+│   ├── _1_fleetoperation_simulation/# Fleet operation simulation package
+│   │   ├── generate_graphs.py
+│   │   ├── config_loader_schedule.py
+│   │   └── schedule_generation.py
+│   ├── _2_co_optimisation/          # Co-optimisation package
+│   │   ├── co_optimisation.py
+│   │   ├── config_loader_optimisation.py
+│   │   └── optimisation_graphs.py
+│   ├── _config_templates/           # YAML templates copied by `efleetplan-start`
+│   └── _cli.py                      # `efleetplan-start` command
 ├── pyproject.toml
-├── MANIFEST.in
 └── mkdocs.yml
 ```
 
