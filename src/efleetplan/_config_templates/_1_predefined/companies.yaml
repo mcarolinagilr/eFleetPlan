@@ -1,0 +1,137 @@
+# =============================================================================
+# Company type/ Use-Case predefined
+# =============================================================================
+# Each key is a company type or commodity type, and the values are the parameters related to the distance and stops of the trips.
+#The values related to company type are defined based on the findings of a survey 
+#on light goods vehicles in Sweden conducted by Transport Analysis in 2022. 
+
+
+# Shared defaults 
+_defaults: &defaults
+  min_distance: 30
+  max_distance: 200
+  min_distance_per_step: 1
+  max_distance_per_step: 50
+
+
+# ----------------------------------------------------------------------------
+# Parameters per type of transport
+#-----------------------------------------------------------------------------
+
+# Type of transport is defined as the primary use of the LCV and are described as follows: 
+  # Distribution: Distribution transport for goods or commodities transports with several stops for loading and unloading along the way; 
+  # Linehaul: Line haul goods or commodities transports, directly from one place to another;  
+  # craft_serv_with_goods: Crafts and services with goods transports include trips for craft or service vehicle that include goods or merchandise to be used or installed in the work; 
+  # craft_serv_without_goods: Crafts and services without goods correspond to craft or service trips without goods or merchandise.
+
+
+distribution:
+  <<: *defaults
+  avg_distance_wd: 124
+  dev_distance_wd: 15
+  avg_distance_we: 73
+  dev_distance_we: 15
+  max_distance: 300            # override default
+  avg_stops: 52.4
+  dev_stops: 11.7
+
+linehaul:
+  <<: *defaults
+  avg_distance_wd: 73
+  dev_distance_wd: 16
+  avg_distance_we: 43
+  dev_distance_we: 16
+  avg_stops: 3.6
+  dev_stops: 1.1
+
+craft_serv_with_goods:
+  <<: *defaults
+  avg_distance_wd: 75
+  dev_distance_wd: 7
+  avg_distance_we: 45
+  dev_distance_we: 7
+  avg_stops: 52.4
+  dev_stops: 11.7
+
+craft_serv_without_goods:
+  <<: *defaults
+  avg_distance_wd: 71
+  dev_distance_wd: 8
+  avg_distance_we: 42
+  dev_distance_we: 8
+  avg_stops: 3.7
+  dev_stops: 0.5
+
+
+
+
+# ----------------------------------------------------------------------------
+# Parameters per comodity type
+# -----------------------------------------------------------------------------
+
+# Commodity groups were formulated in Light Goods Vehicles 2022 survey to capture the type of goods 
+# commonly transported identified by the vehicles.
+# Food: Food and beverages, including refrigerated transport;
+# Mail: Mail and parcels, including postal and courier services;
+# Building: Building materials, including construction and renovation materials;
+# High distance: Transports with high average distance, such as long-haul transport or transports;
+# General cargo: General cargo, including transports of goods or commodities not included in the other
+
+food:
+  <<: *defaults
+  avg_distance_wd: 81
+  dev_distance_wd: 21
+  avg_distance_we: 48
+  dev_distance_we: 21
+  avg_stops: 11
+  dev_stops: 4.1
+
+mail:
+  <<: *defaults
+  avg_distance_wd: 122
+  dev_distance_wd: 23
+  avg_distance_we: 72
+  dev_distance_we: 23
+  avg_stops: 98.1
+  dev_stops: 21.8
+
+building:
+  <<: *defaults
+  avg_distance_wd: 75
+  dev_distance_wd: 8
+  avg_distance_we: 44
+  dev_distance_we: 8
+  avg_stops: 4.1
+  dev_stops: 0.3
+
+highdistance:
+  <<: *defaults
+  avg_distance_wd: 350
+  dev_distance_wd: 50
+  avg_distance_we: 300
+  dev_distance_we: 50
+  min_distance: 30
+  max_distance: 400
+  max_distance_per_step: 70
+  avg_stops: 52.4
+  dev_stops: 11.7
+
+generalcargo:
+  <<: *defaults
+  avg_distance_wd: 108.6
+  dev_distance_wd: 23
+  avg_distance_we: 64
+  dev_distance_we: 23
+  min_distance: 20
+  avg_stops: 11.7
+  dev_stops: 3.3
+
+nogoods:
+  <<: *defaults
+  avg_distance_wd: 67.4
+  dev_distance_wd: 6.8
+  avg_distance_we: 39.9
+  dev_distance_we: 6.8
+  min_distance: 20
+  avg_stops: 3.4
+  dev_stops: 0.4

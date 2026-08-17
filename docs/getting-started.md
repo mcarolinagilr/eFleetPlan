@@ -8,55 +8,112 @@ This page guide the user for installing running the eFleetPlan.
 
 ## Installation
 
-### Step 1. Clone the repository
+There are two ways to install eFleetPlan, depending on what you want to do.
 
-```bash
-git clone https://github.com/carolinagr/eFleetPlan.git
-cd eFleetPlan
-```
+=== "Option A — From GitHub (clone the repo)"
 
-### Step 2. Create a virtual environment
+    Use this if you want to run the example notebooks, reproduce the paper's illustrative examples, or edit the source code.
 
-=== "Linux / macOS"
+    #### Step 1. Clone the repository
+
+    ```bash
+    git clone https://github.com/mcarolinagilr/efleetplan.git
+    cd efleetplan
+    ```
+
+    #### Step 2. Create a virtual environment
+
+    **Linux / macOS:**
 
     ```bash
     python -m venv venv
     source venv/bin/activate
     ```
 
-=== "Windows"
+    **Windows:**
 
     ```bash
     python -m venv venv
     venv\Scripts\activate
     ```
 
-### Step 3. Install the package
+    #### Step 3. Install the package
 
-```bash
-pip install .
-```
+    ```bash
+    pip install .
+    ```
 
-This installs eFleetPlan and all its dependencies (NumPy, Pandas, Matplotlib, Pyomo, Pydantic, PyYAML, and others listed in `pyproject.toml`).
+    This installs eFleetPlan and all its dependencies (NumPy, Pandas, Matplotlib, Pyomo, Pydantic, PyYAML, and others listed in `pyproject.toml`), and includes the `notebooks/`, `test/`, and `config/` folders from the repo.
 
-### Step 4. Verify the installation
+    #### Step 4. Verify the installation
 
-```bash
-python -m efleetplan
-```
+    ```bash
+    python -m efleetplan
+    ```
 
-If the command runs without errors, everything is correctly installed — including Gurobi.
+    If the command runs without errors, everything is correctly installed — including Gurobi.
 
-### Initial test : A first test can be performed by running the notebooks in the folder Test.
+    #### Initial test
+
+    A first test can be performed by running the notebooks in the `test/` folder.
+
+=== "Option B — From PyPI (use as a library)"
+
+    Use this if you just want to call eFleetPlan's functions (`generate_fleet_schedules`, `optimisation`, etc.) from your own code, without cloning the repository.
+
+    #### Step 1. Create a virtual environment
+
+    **Linux / macOS:**
+
+    ```bash
+    python -m venv venv
+    source venv/bin/activate
+    ```
+
+    **Windows:**
+
+    ```bash
+    python -m venv venv
+    venv\Scripts\activate
+    ```
+
+    #### Step 2. Install the package
+
+    ```bash
+    pip install efleetplan
+    ```
+
+    #### Step 3. Create your config folder
+
+    ```bash
+    efleetplan-start
+    ```
+
+    This prompts for a destination folder and copies editable YAML templates there (`env.yaml`, `run_FleetSchedule_Config.yaml`, `run_Optimisation_Config.yaml`, the predefined vehicle/schedule/company/infrastructure library, and the illustrative example configs). Edit those files to define your fleet, then supply your own energy consumption factor and electricity price CSVs (see [Input data](#input-data) below).
+
+    #### Step 4. Verify the installation
+
+    ```bash
+    python -c "from efleetplan import generate_fleet_schedules; print('OK')"
+    ```
+
+    Unlike Option A, this does not include the `notebooks/` or `test/` folders — call the functions directly from your own scripts, e.g.:
+
+    ```python
+    from efleetplan import load_scheduler_config, generate_fleet_schedules
+
+    env, run, predefined = load_scheduler_config(
+        env_yaml="config/env.yaml",
+        run_yaml="config/run_FleetSchedule_Config.yaml",
+    )
+    schedule = generate_fleet_schedules(env, run, predefined)
+    ```
 
 ## Project structure
 
 ```
 eFleetPlan/
 ├── config/                                     # All configuration (YAML)
-│   ├── _0_supportfiles/                        # Reusable parameter sets
-│   │   ├── config_loader_schedule.py           # Config loader — schedule Package
-│   │   ├── config_loader_optimisation.py       # Config loader — optimisation Package
 │   ├── _1_predefined/                          # Reusable parameter sets
 │   │   ├── companies.yaml
 │   │   ├── infrastructure_configuration.yaml
@@ -74,9 +131,11 @@ eFleetPlan/
 ├── notebooks/
 │   ├── 1_Fleet_Operation_simulation.ipynb
 │   └── 2_Co-optimisation.ipynb
-├── src/efleetplan/                             # Source code
-│   ├── _1_schedule/
-│   └── _2_optimisation/
+├── src/efleetplan/                             # Source code (installable package)
+│   ├── _1_fleetoperation_simulation/           # incl. config_loader_schedule.py
+│   ├── _2_co_optimisation/                     # incl. config_loader_optimisation.py
+│   ├── _config_templates/                      # YAML templates copied by `efleetplan-start`
+│   └── _cli.py                                 # `efleetplan-start` command
 └── test/                                       # files to perform a simples and fast test
 ```
 

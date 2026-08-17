@@ -5,9 +5,9 @@ This file aims to load all YAML configurations that will support the Fleet Opera
 -----
     In the notebook runner or in the executer file the user needs to call:
 
-        from config_loader_schedule import load_config
+        from config_loader_schedule import load_scheduler_config
 
-        env, run, predefined = load_config(
+        env, run, predefined = load_scheduler_config(
         env_yaml=os.path.join(config_dir, 'env.yaml'), # location of environment parameters
         run_yaml=os.path.join(config_dir, 'run.yaml'), # location of Fleet Operation simulation parameters
         predefined_dir=os.path.join(config_dir, '_1_predefined'), # location of predefined parameters
@@ -260,7 +260,7 @@ class RunConfig(BaseModel):
 # Loading, formating and returning all parameters configurations for the fleet operation simulation.
 # =============================================================================
 
-def load_config(
+def load_scheduler_config(
     env_yaml: str | Path = "config/env.yaml",
     run_yaml: str | Path = "config/run.yaml",
     predefined_dir: str | Path | None = None,

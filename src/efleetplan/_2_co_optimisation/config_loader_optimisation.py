@@ -175,16 +175,27 @@ def _build_cost_dicts(infra_raw):
 
 def load_opt_config(run_yaml: str,
                     infra_yaml: str,
-                    env_yaml: str = None):
+                    env_yaml: str = None,
+                    input_folder: str | Path = None,
+                    output_folder: str | Path = None):
     """
     Load and validate both YAML files, then build the dictionaries
     that ``optimisation()`` expects.
 
     Parameters
     ----------
-    run_yaml   : path to run_opt.yaml
-    infra_yaml : path to infrastructure_configuration.yaml
-    env_yaml   : path to env.yaml
+    run_yaml      : path to run_opt.yaml
+    infra_yaml    : path to infrastructure_configuration.yaml
+    env_yaml      : path to env.yaml
+    input_folder  : folder containing the electricity price CSV and other
+                     inputs. Defaults to ``<repo>/data/Input`` when running
+                     from a checkout of this repository; must be supplied
+                     explicitly otherwise (e.g. when eFleetPlan is used as
+                     an installed package).
+    output_folder : folder containing the Package 1 schedule CSV, and
+                     where results get written. Defaults to
+                     ``<repo>/data/Output`` under the same condition as
+                     ``input_folder``.
 
     Returns
     -------
@@ -243,8 +254,25 @@ def load_opt_config(run_yaml: str,
     # --- Build opt_config ---
     sname = run.schedule_name
 
-    input_folder  = PROJECT_ROOT / "data" / "Input"
-    output_folder = PROJECT_ROOT / "data" / "Output" / sname
+    if input_folder is not None:
+        input_folder = Path(input_folder)
+    else:
+        input_folder = PROJECT_ROOT / "data" / "Input"
+        if not input_folder.exists():
+            raise FileNotFoundError(
+                f"Could not find {input_folder}. Pass input_folder=... explicitly "
+                "when not running from a checkout of the eFleetPlan repository."
+            )
+
+    if output_folder is not None:
+        output_folder = Path(output_folder) / sname
+    else:
+        output_folder = PROJECT_ROOT / "data" / "Output" / sname
+        if not output_folder.parent.exists():
+            raise FileNotFoundError(
+                f"Could not find {output_folder.parent}. Pass output_folder=... explicitly "
+                "when not running from a checkout of the eFleetPlan repository."
+            )
 
 
     def _pivot_table(schedule_csv):
@@ -257,7 +285,12 @@ def load_opt_config(run_yaml: str,
             'PowerRate_Limitation': df.pivot(index='date', columns='VehicleID', values='PowerRating_kW'),
         }
 
-    schedule_csv = PROJECT_ROOT / "data" / "Output" / f"{sname}" / f"{sname}.csv"
+    schedule_csv = output_folder / f"{sname}.csv"
+    if not schedule_csv.exists():
+        raise FileNotFoundError(
+            f"Schedule CSV not found at {schedule_csv}. Run Package 1 "
+            "(generate_fleet_schedules) first, or pass the correct output_folder."
+        )
     vehicle_data = _pivot_table(schedule_csv)
 
     opt_config = {

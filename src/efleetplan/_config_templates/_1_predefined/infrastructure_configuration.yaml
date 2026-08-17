@@ -1,0 +1,53 @@
+# =============================================================================
+# INFRASTRUCTURE CHARGING CONFIGURATIONS
+# =============================================================================
+
+
+# -----  INFRASTRUCTURE POWER ---------------------------------------------------------------------------
+
+Charging_losses: 0.964  # Charging efficiency
+
+Charger_Power: 
+  f1: 7.4
+  f2: 50
+  f3: 150
+  f4: 350
+  route: 150
+
+
+Battery_Maximum_Limit: 0.8  # Maximum limit of the battery (80% of its capacity)
+Battery_Minimum_Limit: 0.2   # Minimum limit of the battery (20% of its capacity)
+
+  
+# -----  INFRASTRUCTURE COSTS PARAMETERS---------------------------------------------------------------------------
+
+
+lifetime: 20 #years
+Infrastructure_subscription: 50 #SEK/day
+Price_FixedrateDT: 0.0331 #SEK/kWh
+Demand_rate: 1352 #kW
+Price_Fixedrateroute: 8.90 #SEK/route
+Discount_rate: 0.05 #%
+
+
+investment cost: 
+  f1: 32000 #SEK
+  f2: 294000 #SEK
+  f3: 778000 #SEK
+  f4: 1451000 #SEK
+  route: 778000 #SEK
+
+installation cost:
+  f1: 29000 #SEK
+  f2: 472000 #SEK
+  f3: 644000 #SEK
+  f4: 1202000 #SEK
+  route: 1202000 #SEK
+
+maintenance cost:
+  f1: 5000 #SEK/year
+  f2: 40000 #SEK/year
+  f3: 120000 #SEK/year
+  f4: 240000 #SEK/year
+  route: 120000 #SEK/year
+

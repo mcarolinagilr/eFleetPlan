@@ -5,12 +5,12 @@ The loaders are called automatically by the notebooks.
 
 ## Schedule Config Loader
 
-**Package:** `config.0_supportfiles.config_loader_schedule`
+**Package:** `efleetplan._1_fleetoperation_simulation.config_loader_schedule`
 
-### `load_config`
+### `load_scheduler_config`
 
 ```python
-def load_config(
+def load_scheduler_config(
     env_yaml: str | Path = "config/env.yaml",
     run_yaml: str | Path = "config/run.yaml",
     predefined_dir: str | Path | None = None,
@@ -85,7 +85,7 @@ Pydantic models holding the individual parameter sets. See the [Configuration Re
 
 ## Optimisation Config Loader
 
-**Package:** `config._0_supportfiles.config_loader_optimisation`
+**Package:** `efleetplan._2_co_optimisation.config_loader_optimisation`
 
 ### `load_opt_config`
 

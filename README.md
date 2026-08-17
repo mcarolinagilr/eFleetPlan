@@ -13,7 +13,8 @@ See the [LICENSE](./LICENSE) file for details.
 
 ## Citation
 If you use eFleetPlan, please cite:
-**Gil Ribeiro, C and Thakur, J, eFleetPlan: Co-optimisation tool of Charging Infrastructure Investment and Fleet Operations, 2025. DOI:xxxxxxx
+
+> Gil Ribeiro, C. and Thakur, J., *eFleetPlan: Co-optimisation of charging infrastructure investment and electric fleet operations*, SoftwareX, 2026, Article 102748. DOI: [10.1016/j.softx.2026.102748](https://doi.org/10.1016/j.softx.2026.102748)
 
 ## Project structure
 
@@ -25,8 +26,6 @@ eFleetPlan/
 │   │   ├── infrastructure_configuration.yaml
 │   │   ├── schedules.yaml
 │   │   └── vehicles.yaml
-│   ├── config_loader_schedule.py    # Config loader for schedule generation
-│   ├── config_loader_optimisation.py# Config loader for optimisation
 │   ├── env.yaml                     # Environment settings 
 │   ├── run_FleetSchedule_Config.yaml# Schedule generation run configuration
 │   └── run_Optimisation_Config.yaml # Optimisation run configuration
@@ -57,38 +56,66 @@ eFleetPlan/
 - Python 3.9 or later
 - Solver for optimisation: default is [Gurobi Optimizer](https://www.gurobi.com/) with a valid license but can be changed for other solver in the co_optimisation.py file 
 
-### Step 1 — Clone the repository
+There are two ways to install eFleetPlan, depending on what you want to do.
+
+### Option A — From GitHub (clone the repo)
+
+Use this to run the example notebooks, reproduce the paper's illustrative examples, or edit the source code.
+
+**Step 1 — Clone the repository**
 
 ```bash
-git clone https://github.com/mcarolinagilr/eFleetPlan.git
-cd eFleetPlan
+git clone https://github.com/mcarolinagilr/efleetplan.git
+cd efleetplan
 ```
 
-### Step 2 — Create a virtual environment and install
-
-**Linux / macOS:**
-
-```bash
-python -m venv venv
-source venv/bin/activate
-pip install .
-```
-
-**Windows:**
+**Step 2 — Create a virtual environment and install**
 
 ```bash
 python -m venv venv
-venv\Scripts\activate
+source venv/bin/activate      # Windows: venv\Scripts\activate
 pip install .
 ```
 
-### Step 3 — Verify the installation
+**Step 3 — Verify the installation**
 
 ```bash
 python -m efleetplan
 ```
 
 This confirms that all dependencies (including Gurobi) are correctly installed.
+
+### Option B — From PyPI (use as a library)
+
+Use this to call eFleetPlan's functions from your own code, without cloning the repository.
+
+**Step 1 — Create a virtual environment and install**
+
+```bash
+python -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
+pip install efleetplan
+```
+
+**Step 2 — Create your config folder**
+
+```bash
+efleetplan-start
+```
+
+Prompts for a destination folder and copies editable YAML templates there (`env.yaml`, run configs, the predefined vehicle/schedule/company/infrastructure library, and the illustrative example configs). Edit those, then supply your own energy consumption factor and electricity price CSVs.
+
+**Step 3 — Use it**
+
+```python
+from efleetplan import load_scheduler_config, generate_fleet_schedules
+
+env, run, predefined = load_scheduler_config(
+    env_yaml="config/env.yaml",
+    run_yaml="config/run_FleetSchedule_Config.yaml",
+)
+schedule = generate_fleet_schedules(env, run, predefined)
+```
 
 ## eFleetPlan Configurations
 

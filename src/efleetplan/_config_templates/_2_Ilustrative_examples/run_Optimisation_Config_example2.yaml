@@ -1,0 +1,68 @@
+# =============================================================================
+# Co-optimisation RUN CONFIGURATION
+# =============================================================================
+
+# One file per schedule to optimise (e.g. run_opt_schedule1.yaml, run_opt_schedule2.yaml, ...)
+# Infrastructure and power parameters are loaded separately from infrastructure_configuration.yaml, 
+# but here you can also use custom parameters for the optimisation run (e.g. MIPGap, time horizon, etc.)
+
+
+schedule_name: "Example_2"
+schedule_number: 2
+electricity_price_file: "el_prices_2024.csv"
+
+
+# Fleet
+EVs: 50                    # Number of electric vehicles
+
+# Solver
+MIPGap: 0.01                # MIP optimality gap (between 0 and 1)
+
+infrastructure_configurations: predefined  # "predefined" or "custom". 
+#If "custom", will look for infrastructure parameters defined above in this file, instead of infrastructure_configuration.yaml
+
+# ----- INFRASTRUCTURE CONFIGURATION CUSTOM PARAMETERS---------------------------------------------------
+
+# INFRASTRUCTURE COST AND POWER 
+
+#infrastructure_configurations == "custom":
+
+lifetime: 20 #years
+Infrastructure_subscription: 50 #currency/day
+Price_FixedrateDT: 0.0331 #currency/kWh
+Demand_rate: 1352 #kW
+Price_Fixedrateroute: 8.90 #currency/route
+Discount_rate: 0.05 #%
+
+Charging_losses: 0.964
+
+Charger_Power: 
+  f1: 7.4
+  f2: 50
+  f3: 150
+  f4: 350
+  route: 150
+  
+
+Battery_Maximum_Limit: 0.8  # Maximum limit of the battery (80% of its capacity)
+Battery_Minimum_Limit: 0.2   # Minimum limit of the battery (20% of its capacity)
+
+investment cost: 
+  f1: 1000 #currency
+  f2: 1000000 #currency
+  f3: 10000000 #currency
+  f4: 100000000 #currency
+
+installation cost:
+  f1: 1 #currency
+  f2: 1 #currency
+  f3: 1 #currency
+  f4: 1 #currency
+
+maintenance cost:
+  f1: 1 #currency/year
+  f2: 1 #currency/year
+  f3: 1 #currency/year
+  f4: 1 #currency/year
+
+
