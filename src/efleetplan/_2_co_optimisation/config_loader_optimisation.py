@@ -177,7 +177,8 @@ def load_opt_config(run_yaml: str,
                     infra_yaml: str,
                     env_yaml: str = None,
                     input_folder: str | Path = None,
-                    output_folder: str | Path = None):
+                    scheduler_output: str | Path = None,
+                    optimisation_output: str | Path = None):
     """
     Load and validate both YAML files, then build the dictionaries
     that ``optimisation()`` expects.
@@ -192,10 +193,19 @@ def load_opt_config(run_yaml: str,
                      from a checkout of this repository; must be supplied
                      explicitly otherwise (e.g. when eFleetPlan is used as
                      an installed package).
-    output_folder : folder containing the Package 1 schedule CSV, and
-                     where results get written. Defaults to
-                     ``<repo>/data/Output`` under the same condition as
-                     ``input_folder``.
+    scheduler_output : folder containing the Package 1 (scheduler) schedule
+                     CSV to read — the optimisation's *input* schedule.
+                     Defaults to ``<repo>/data/Output`` under the same
+                     condition as ``input_folder``. This is where the
+                     schedule is read from, not where results get written —
+                     use ``optimisation_output`` for that.
+    optimisation_output : folder where this optimisation run's results get
+                     written. Independent of ``scheduler_output``, so the
+                     optimisation can be run standalone against schedules
+                     produced elsewhere while writing results somewhere
+                     else entirely. Defaults to
+                     ``scheduler_output / "Results"`` if not supplied,
+                     preserving the previous behaviour.
 
     Returns
     -------
@@ -264,16 +274,21 @@ def load_opt_config(run_yaml: str,
                 "when not running from a checkout of the eFleetPlan repository."
             )
 
-    if output_folder is not None:
-        output_folder = Path(output_folder) / sname
+    if scheduler_output is not None:
+        scheduler_output = Path(scheduler_output) / sname
     else:
-        output_folder = PROJECT_ROOT / "data" / "Output" / sname
-        if not output_folder.parent.exists():
+        scheduler_output = PROJECT_ROOT / "data" / "Output" / sname
+        if not scheduler_output.parent.exists():
             raise FileNotFoundError(
-                f"Could not find {output_folder.parent}. Pass output_folder=... explicitly "
+                f"Could not find {scheduler_output.parent}. Pass scheduler_output=... explicitly "
                 "when not running from a checkout of the eFleetPlan repository."
             )
 
+    if optimisation_output is not None:
+        optimisation_output = Path(optimisation_output) / sname / "Results"
+    else:
+        optimisation_output = scheduler_output / "Results"
+    optimisation_output.mkdir(parents=True, exist_ok=True)
 
     def _pivot_table(schedule_csv):
         df = pd.read_csv(schedule_csv, parse_dates=['date'])
@@ -285,11 +300,11 @@ def load_opt_config(run_yaml: str,
             'PowerRate_Limitation': df.pivot(index='date', columns='VehicleID', values='PowerRating_kW'),
         }
 
-    schedule_csv = output_folder / f"{sname}.csv"
+    schedule_csv = scheduler_output / f"{sname}.csv"
     if not schedule_csv.exists():
         raise FileNotFoundError(
             f"Schedule CSV not found at {schedule_csv}. Run Package 1 "
-            "(generate_fleet_schedules) first, or pass the correct output_folder."
+            "(generate_fleet_schedules) first, or pass the correct scheduler_output."
         )
     vehicle_data = _pivot_table(schedule_csv)
 
@@ -301,8 +316,9 @@ def load_opt_config(run_yaml: str,
         "Schedule name":  sname,
         "EVs":            run.EVs,
 
-        "output_folder":  output_folder,
-        "input_folder":   input_folder,
+        "scheduler_output":    scheduler_output,
+        "input_folder":        input_folder,
+        "optimisation_output": optimisation_output,
 
         # Load the CSV inputs produced by Fleet Operation simulation
         "electricity_price_grid": pd.read_csv(input_folder / run.electricity_price_file

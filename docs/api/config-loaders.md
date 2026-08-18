@@ -94,7 +94,9 @@ def load_opt_config(
     run_yaml: str,
     infra_yaml: str,
     env_yaml: str = None,
-    project_root: str = None,
+    input_folder: str | Path = None,
+    scheduler_output: str | Path = None,
+    optimisation_output: str | Path = None,
 ) -> tuple[dict, dict, dict, RunOptConfig]
 ```
 
@@ -105,7 +107,9 @@ Load and validate YAML files for Package 2, then build the data structures that 
 - `run_yaml` — path to the optimisation run YAML
 - `infra_yaml` — path to `infrastructure_configuration.yaml`
 - `env_yaml` — path to `env.yaml` (optional; used to fill in dates)
-- `project_root` — project root directory (auto-detected if not provided)
+- `input_folder` — folder containing the electricity price CSV and other inputs. Defaults to `<repo>/data/Input` when running from a checkout of this repository.
+- `scheduler_output` — folder containing the Package 1 (scheduler) schedule CSV to *read* (the optimisation's input schedule). Defaults to `<repo>/data/Output`. This is not where results are written — use `optimisation_output` for that.
+- `optimisation_output` — folder where this optimisation run's results get *written*. Independent of `scheduler_output`, so optimisation can run standalone against schedules produced elsewhere while writing results somewhere else entirely. Defaults to `scheduler_output/Results` if not supplied.
 
 **Returns:** `(opt_config, cost_config, power_charge_config, run)`
 

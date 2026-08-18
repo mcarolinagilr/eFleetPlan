@@ -134,18 +134,22 @@ opt_config, cost_config, power_config, opt_run = load_opt_config(
     infra_yaml="config/_1_predefined/infrastructure_configuration.yaml",
     env_yaml="config/env.yaml",
     input_folder=env.consumption_factor_file.parent,
-    output_folder=env.output_base,
+    scheduler_output=env.output_base,     # where Package 1's schedule CSV is read from
+    # optimisation_output=...,            # optional: where results are written; defaults to scheduler_output/Results
 )
 m, Price, EV_availability, Distance_km, days = optimisation(opt_config, cost_config, power_config)
 
+optimisation_output = opt_config["optimisation_output"]
 save_results(
     m, Price, EV_availability, Distance_km,
-    csv_file_pathA="results_main_variables.csv",
-    csv_file_pathB="results_summary.csv",
-    csv_file_pathC="results_per_EV.csv",
+    csv_file_pathA=optimisation_output / "results_main_variables.csv",
+    csv_file_pathB=optimisation_output / "results_summary.csv",
+    csv_file_pathC=optimisation_output / "results_per_EV.csv",
     cost_config=cost_config, power_config=power_config, days=days,
 )
 ```
+
+`scheduler_output` and `optimisation_output` are independent — pass a different `optimisation_output` to run the optimisation standalone against schedules produced elsewhere while writing results somewhere else entirely.
 
 ## eFleetPlan Configurations
 

@@ -24,6 +24,8 @@ It constructs a Pyomo `ConcreteModel` with all parameters, variables, constraint
     - `MIPGap` — Optimality solver gap tolerance of optimisation 
     - `electricity_price_grid` — load of price DataFrame included in the input folder
     - `En_consumption`, `Ev_distance`, `EV_availability`, `Battery_Limitation`, `PowerRate_Limitation` — pivoted vehicle dataFrames loaded from package 1 file, or user costum files.
+    - `input_folder`, `scheduler_output` — the input folder and the Package 1 schedule folder the run was loaded from
+    - `optimisation_output` — folder to write this run's results to (set via `load_opt_config(optimisation_output=...)`, independent of `scheduler_output`)
 - `cost_config` (dictionaries) — infrastructure and electricity cost parameters:
     - `Infrastructure_life`, Infrastructure lifetime
     - `Discount_rate`, Discount rate applied to infrastructure investment costs 
