@@ -356,7 +356,7 @@ def optimisation(opt_config, cost_config, power_config):
     solver.options['Threads'] = 16
     solver.options['Seed'] = 42                   # Fixed seed for some reproducibility
             
-    print(f"→ Solving model with {EVs} vehicles over {hours} time steps (delta_t={delta_t})...")
+    print(f"-> Solving model with {EVs} vehicles over {hours} time steps (delta_t={delta_t})...")
     t_start = time.time()
     result = solver.solve(m, tee=True)
     print(f"Solve completed in {time.time() - t_start:.1f} seconds")
@@ -587,4 +587,4 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
                     pyo.value(m.Charge_pertime_route[b, t]),
                     pyo.value(Distance_km[b, t])
                 ])
-    print("✅ Results saved successfully as CSV!")
+    print("Results saved successfully as CSV!")

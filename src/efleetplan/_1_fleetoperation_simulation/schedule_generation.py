@@ -183,36 +183,36 @@ class ScheduleGenerator:
     def _set_driving_step(
         self,
         schedule: pd.DataFrame,
-        mask: pd.Series,
+        idx: int,
         distance_per_step: float,
         consumption_rate: float,
         consumption_factor: float,
     ) -> None:
         """Fill in a driving (on-road) timestep."""
-        schedule.loc[mask, "Distance_km"] = distance_per_step
-        schedule.loc[mask, "Consumption_kWh"] = distance_per_step * consumption_rate * consumption_factor
-        schedule.loc[mask, "Consumption_rate_corrected"] = consumption_rate * consumption_factor
-        schedule.loc[mask, "Location"] = 0
-        schedule.loc[mask, "ChargingStation"] = 0
-        schedule.loc[mask, "ID"] = str(self.vehicle_id)
-        schedule.loc[mask, "Battery_Capacity_kWh"] = self.vc.battery_capacity
-        schedule.loc[mask, "vehicle_type"] = self.vc.vehicle_type
+        schedule.at[idx, "Distance_km"] = distance_per_step
+        schedule.at[idx, "Consumption_kWh"] = distance_per_step * consumption_rate * consumption_factor
+        schedule.at[idx, "Consumption_rate_corrected"] = consumption_rate * consumption_factor
+        schedule.at[idx, "Location"] = 0
+        schedule.at[idx, "ChargingStation"] = 0
+        schedule.at[idx, "ID"] = str(self.vehicle_id)
+        schedule.at[idx, "Battery_Capacity_kWh"] = self.vc.battery_capacity
+        schedule.at[idx, "vehicle_type"] = self.vc.vehicle_type
 
     def _set_depot_step(
         self,
         schedule: pd.DataFrame,
-        mask: pd.Series,
+        idx: int,
         consumption_factor: float,
     ) -> None:
         """Fill in a depot (at-home/charging) timestep."""
-        schedule.loc[mask, "Distance_km"] = 0.0
-        schedule.loc[mask, "Consumption_kWh"] = 0.0
-        schedule.loc[mask, "Consumption_rate_corrected"] = 0.0
-        schedule.loc[mask, "Location"] = 1
-        schedule.loc[mask, "ChargingStation"] = 1
-        schedule.loc[mask, "ID"] = str(self.vehicle_id)
-        schedule.loc[mask, "Battery_Capacity_kWh"] = self.vc.battery_capacity
-        schedule.loc[mask, "vehicle_type"] = self.vc.vehicle_type
+        schedule.at[idx, "Distance_km"] = 0.0
+        schedule.at[idx, "Consumption_kWh"] = 0.0
+        schedule.at[idx, "Consumption_rate_corrected"] = 0.0
+        schedule.at[idx, "Location"] = 1
+        schedule.at[idx, "ChargingStation"] = 1
+        schedule.at[idx, "ID"] = str(self.vehicle_id)
+        schedule.at[idx, "Battery_Capacity_kWh"] = self.vc.battery_capacity
+        schedule.at[idx, "vehicle_type"] = self.vc.vehicle_type
 
     # -------------------------------------------------------------------------
     # Schedule dispatch
@@ -291,9 +291,7 @@ class ScheduleGenerator:
         day = {"dep_date": None, "ret_date": None, "distance_per_step": 0.0}
         consumption_factor = 1.0
 
-        for step in schedule["date"]:
-            mask = schedule["date"] == step
-
+        for i, step in enumerate(schedule["date"]):
             # New day → plan the day's trip
             if step.hour == 0 and step.minute == 0:
                 day = self._plan_continuous_day(step, timestep_seconds)
@@ -303,11 +301,11 @@ class ScheduleGenerator:
                 consumption_rate = self._sample_consumption_rate(day["distance_per_step"])
                 consumption_factor = self._get_consumption_factor(step)
                 self._set_driving_step(
-                    schedule, mask,
+                    schedule, i,
                     day["distance_per_step"], consumption_rate, consumption_factor,
                 )
             else:
-                self._set_depot_step(schedule, mask, consumption_factor)
+                self._set_depot_step(schedule, i, consumption_factor)
 
         return schedule
 
@@ -427,9 +425,7 @@ class ScheduleGenerator:
         day: dict = {}
         consumption_factor = 1.0
 
-        for step in schedule["date"]:
-            mask = schedule["date"] == step
-
+        for i, step in enumerate(schedule["date"]):
             # New day → plan the day
             if step.hour == 0 and step.minute == 0:
                 if step.weekday() < 5:
@@ -445,25 +441,36 @@ class ScheduleGenerator:
                 dist_per_step = day["dist_first"] / day["first_trip_steps"] if day["first_trip_steps"] > 0 else 0.0
                 consumption_rate = self._sample_consumption_rate(dist_per_step)
                 consumption_factor = self._get_consumption_factor(step)
-                self._set_driving_step(schedule, mask, dist_per_step, consumption_rate, consumption_factor)
+                self._set_driving_step(schedule, i, dist_per_step, consumption_rate, consumption_factor)
 
             # Second trip: pause_end → ret
             elif day["pause_end"] <= step < day["ret_date"]:
                 dist_per_step = day["dist_second"] / day["second_trip_steps"] if day["second_trip_steps"] > 0 else 0.0
                 consumption_rate = self._sample_consumption_rate(dist_per_step)
                 consumption_factor = self._get_consumption_factor(step)
-                self._set_driving_step(schedule, mask, dist_per_step, consumption_rate, consumption_factor)
+                self._set_driving_step(schedule, i, dist_per_step, consumption_rate, consumption_factor)
 
             # At depot (before departure, during pause, after return)
             else:
-                self._set_depot_step(schedule, mask, consumption_factor)
+                self._set_depot_step(schedule, i, consumption_factor)
 
             # Emergency trip (Type B only, ~2% chance at end of day)
             if (step == dt.datetime(step.year, step.month, step.day, hour=23, minute=45)
                     and np.random.random() > 0.98):
-                self._apply_emergency_trip(schedule, step, timestep_seconds, consumption_factor)
+                self._apply_emergency_trip(schedule, i, consumption_factor)
 
         return schedule
+
+    def _apply_emergency_trip(
+        self,
+        schedule: pd.DataFrame,
+        idx: int,
+        consumption_factor: float,
+    ) -> None:
+        """Overwrite the day's last timestep with a rare emergency trip (Type B only)."""
+        distance_per_step = np.random.uniform(self.cc.min_distance_per_step, self.cc.max_distance_per_step)
+        consumption_rate = self._sample_consumption_rate(distance_per_step)
+        self._set_driving_step(schedule, idx, distance_per_step, consumption_rate, consumption_factor)
 
 
 # =============================================================================
