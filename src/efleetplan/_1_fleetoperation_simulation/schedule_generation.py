@@ -177,8 +177,7 @@ class ScheduleGenerator:
             "ChargingStation": 1,
             "ID": str(self.vehicle_id),
             "Battery_Capacity_kWh": self.vc.battery_capacity,
-            "PowerRating_kW": self.vc.charging_power,
-            "consumption_factor": np.nan,
+            "vehicle_type": self.vc.vehicle_type,
         })
 
     def _set_driving_step(
@@ -196,9 +195,8 @@ class ScheduleGenerator:
         schedule.loc[mask, "Location"] = 0
         schedule.loc[mask, "ChargingStation"] = 0
         schedule.loc[mask, "ID"] = str(self.vehicle_id)
-        schedule.loc[mask, "PowerRating_kW"] = 0.0
-        schedule.loc[mask, "Battery_Capacity_kWh"] = 0.0
-        schedule.loc[mask, "consumption_factor"] = consumption_factor
+        schedule.loc[mask, "Battery_Capacity_kWh"] = self.vc.battery_capacity
+        schedule.loc[mask, "vehicle_type"] = self.vc.vehicle_type
 
     def _set_depot_step(
         self,
@@ -213,9 +211,8 @@ class ScheduleGenerator:
         schedule.loc[mask, "Location"] = 1
         schedule.loc[mask, "ChargingStation"] = 1
         schedule.loc[mask, "ID"] = str(self.vehicle_id)
-        schedule.loc[mask, "PowerRating_kW"] = self.vc.charging_power
         schedule.loc[mask, "Battery_Capacity_kWh"] = self.vc.battery_capacity
-        schedule.loc[mask, "consumption_factor"] = consumption_factor
+        schedule.loc[mask, "vehicle_type"] = self.vc.vehicle_type
 
     # -------------------------------------------------------------------------
     # Schedule dispatch
