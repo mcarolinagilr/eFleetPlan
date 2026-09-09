@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
 
-from efleetplan._1_fleetoperation_simulation.config_loader_schedule import (
+from config._0_supportfiles.config_loader_schedule import (
     CompanyConfig,
     EnvironmentConfig,
     PredefinedLibrary,
@@ -243,19 +243,22 @@ class ScheduleGenerator:
 
         Returns a dict with keys: dep_date, ret_date, trip_timesteps,
         total_distance, distance_per_step.
-
-        NOTE: The original code used weekend return params (ret_mean_we, ret_dev_we)
-        for weekday planning, and weekday departure params (dep_mean_wd, dep_dev_wd)
-        for weekend planning. This is preserved here for backward compatibility,
-        but is likely a bug. To fix, swap the _wd/_we suffixes below.
         """
         is_weekday = step.weekday() < 5
 
         if is_weekday:
-            # NOTE: Original used dep_mean_wd for departure but ret_mean_we for return.
-            # This appears to be a copy-paste bug, preserved for identical output.
             dep_hour, dep_min = self._sample_time(
                 self.sc.dep_mean_wd, self.sc.dep_dev_wd, self.sc.min_dep, self.sc.max_dep
+            )
+            total_stops = np.random.normal(self.cc.avg_stops, self.cc.dev_stops)
+            adjusted_ret_mean = self.sc.ret_mean_wd + (total_stops * STOP_TIME_FACTOR * STOP_IMPACT_ON_RETURN)
+            ret_hour, ret_min = self._sample_time(
+                adjusted_ret_mean, self.sc.ret_dev_wd, self.sc.min_return_hour, self.sc.max_return_hour
+            )
+            total_distance = self._sample_lognormal_distance(self.cc.avg_distance_wd, self.cc.dev_distance_wd)
+        else:
+            dep_hour, dep_min = self._sample_time(
+                self.sc.dep_mean_we, self.sc.dep_dev_we, self.sc.min_dep, self.sc.max_dep
             )
             total_stops = np.random.normal(self.cc.avg_stops, self.cc.dev_stops)
             adjusted_ret_mean = self.sc.ret_mean_we + (total_stops * STOP_TIME_FACTOR * STOP_IMPACT_ON_RETURN)
@@ -263,18 +266,6 @@ class ScheduleGenerator:
                 adjusted_ret_mean, self.sc.ret_dev_we, self.sc.min_return_hour, self.sc.max_return_hour
             )
             total_distance = self._sample_lognormal_distance(self.cc.avg_distance_we, self.cc.dev_distance_we)
-        else:
-            # NOTE: Original used dep_mean_wd (weekday) for weekend departure.
-            # Preserved for backward compatibility.
-            dep_hour, dep_min = self._sample_time(
-                self.sc.dep_mean_wd, self.sc.dep_dev_wd, self.sc.min_dep, self.sc.max_dep
-            )
-            total_stops = np.random.normal(self.cc.avg_stops, self.cc.dev_stops)
-            adjusted_ret_mean = self.sc.ret_mean_we + (total_stops * STOP_TIME_FACTOR * STOP_IMPACT_ON_RETURN)
-            ret_hour, ret_min = self._sample_time(
-                adjusted_ret_mean, self.sc.ret_dev_we, self.sc.min_return_hour, self.sc.max_return_hour
-            )
-            total_distance = self._sample_lognormal_distance(self.cc.avg_distance_wd, self.cc.dev_distance_wd)
 
         dep_date = dt.datetime(step.year, step.month, step.day, hour=dep_hour, minute=dep_min)
         ret_date = dt.datetime(step.year, step.month, step.day, hour=ret_hour, minute=ret_min)
