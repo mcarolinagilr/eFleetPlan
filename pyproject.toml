@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "efleetplan"
-version = "1.4.0"
+version = "1.4.1"
 description = "Co-optimisation tool of charging infrastructure investment and electric fleet operations. EFleetPlan is a Python-based tool for optimizing charging infrastructure and operations for electric light commercial vehicles (LCVs)."
 readme = "README.md"
 requires-python = ">=3.10"  # compatible with your numpy/pandas/matplotlib set
