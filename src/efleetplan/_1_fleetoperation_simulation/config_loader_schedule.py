@@ -101,6 +101,7 @@ class VehicleConfig(BaseModel):
 
     model_config = {"extra": "forbid"}
 
+    vehicle_type: str = Field(description="Vehicle model name (e.g. 'renault', 'toyota')")
     consumption_mean: float = Field(gt=0, description="Average consumption in kWh/km")
     consumption_std: float = Field(gt=0, description="Standard deviation of consumption in kWh/km")
     consumption_min: float = Field(gt=0, description="Minimum consumption rate")
@@ -186,7 +187,8 @@ class PredefinedLibrary(BaseModel):
         return ScheduleConfig(**raw)
 
     def get_vehicle(self, name: str, custom: dict | None = None) -> VehicleConfig:
-        raw = self._resolve("vehicle", name, self.vehicles, custom)
+        raw = dict(self._resolve("vehicle", name, self.vehicles, custom))
+        raw.setdefault("vehicle_type", name)
         return VehicleConfig(**raw)
 
     def get_company(self, name: str, custom: dict | None = None) -> CompanyConfig:
