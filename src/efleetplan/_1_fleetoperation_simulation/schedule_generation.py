@@ -178,6 +178,7 @@ class ScheduleGenerator:
             "ID": str(self.vehicle_id),
             "Battery_Capacity_kWh": self.vc.battery_capacity,
             "vehicle_type": self.vc.vehicle_type,
+            "PowerRating_kW": self.vc.charging_power,
         })
 
     def _set_driving_step(
@@ -197,6 +198,7 @@ class ScheduleGenerator:
         schedule.at[idx, "ID"] = str(self.vehicle_id)
         schedule.at[idx, "Battery_Capacity_kWh"] = self.vc.battery_capacity
         schedule.at[idx, "vehicle_type"] = self.vc.vehicle_type
+        schedule.at[idx, "PowerRating_kW"] = self.vc.charging_power
 
     def _set_depot_step(
         self,
@@ -213,6 +215,7 @@ class ScheduleGenerator:
         schedule.at[idx, "ID"] = str(self.vehicle_id)
         schedule.at[idx, "Battery_Capacity_kWh"] = self.vc.battery_capacity
         schedule.at[idx, "vehicle_type"] = self.vc.vehicle_type
+        schedule.at[idx, "PowerRating_kW"] = self.vc.charging_power
 
     # -------------------------------------------------------------------------
     # Schedule dispatch
