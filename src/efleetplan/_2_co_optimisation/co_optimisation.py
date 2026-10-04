@@ -171,13 +171,14 @@ def optimisation(opt_config, cost_config, power_config):
     m.Charge_pertime_f3 = Var(m.b, m.t, bounds=(0, None))
     m.Charge_pertime_f4 = Var(m.b, m.t, bounds=(0, None))
     m.Charge_pertime_route   = Var(m.b, m.t, bounds=(0, None))
-
+    
     m.Charging_f1    = Var(m.b, m.t, domain=Binary)
     m.Charging_f2 = Var(m.b, m.t, domain=Binary)
     m.Charging_f3 = Var(m.b, m.t, domain=Binary)
     m.Charging_f4 = Var(m.b, m.t, domain=Binary)
     m.Charging_route   = Var(m.b, m.t, domain=Binary)
-
+    m.Route_session_fee = Param(initialize=float(route_session_fee))
+    
     m.Max_Power = Var(bounds=(0, None))
 
     # -----------------------------
@@ -272,9 +273,9 @@ def optimisation(opt_config, cost_config, power_config):
     def Balance_CS_f4_rule(m, t):
         return m.CS_f4 >= quicksum(m.Charging_f4[b, t] for b in m.b)
 
-    @m.Constraint(m.t)
-    def Balance_CS_route_rule(m, t):
-        return m.CS_route >= quicksum(m.Charging_route[b, t] for b in m.b)
+    @m.Constraint()
+    def Balance_CS_route_rule(m):
+        return m.CS_route >= quicksum(m.Charging_route[b, t] for b in m.b for t in m.t)
 
     @m.Constraint(m.b, m.t)
     def ChargersPerVehicle_rule(m, b, t):
@@ -339,7 +340,7 @@ def optimisation(opt_config, cost_config, power_config):
         demand = m.Max_Power * m.Demand_rate
 
         # Keep your penalty if you want to discourage route charging
-        Infrastructure_route = quicksum(m.Charging_route[b, t] for b in m.b for t in m.t) + m.CS_route*Horizon_Infrastructure_cost['route']
+        Infrastructure_route = m.Route_session_fee * m.CS_route
 
 
         return infra + energy_dt + energy_route + demand + Infrastructure_route
@@ -386,8 +387,7 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
         'f1': Infrastructure_cost['f1'] * Annuity_factor + maintenance_cost['f1'],
         'f2': Infrastructure_cost['f2'] * Annuity_factor + maintenance_cost['f2'],
         'f3': Infrastructure_cost['f3'] * Annuity_factor + maintenance_cost['f3'],
-        'f4': Infrastructure_cost['f4'] * Annuity_factor + maintenance_cost['f4'],
-        'route': Infrastructure_cost['route'] * Annuity_factor + maintenance_cost['route']
+        'f4': Infrastructure_cost['f4'] * Annuity_factor + maintenance_cost['f4']
     }
     horizon_factor = days / 366
 
@@ -452,8 +452,8 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
         f2_infra = pyo.value(m.CS_f2) * Horizon_Infrastructure_cost['f2']
         f3_infra = pyo.value(m.CS_f3) * Horizon_Infrastructure_cost['f3']
         f4_infra = pyo.value(m.CS_f4) * Horizon_Infrastructure_cost['f4']
-        route_infra = pyo.value(m.CS_route) * Horizon_Infrastructure_cost['route']
-
+        route_infra = pyo.value(m.Route_session_fee) * pyo.value(m.CS_route)
+        
         f1_elec = sum(
             pyo.value(m.Charge_pertime_f1[b, t]) / Ch_losses * (Price[t] + Price_FixedrateDT)
             for b in m.b for t in m.t
@@ -536,12 +536,16 @@ def save_results(m, Price, EV_availability, Distance_km, csv_file_pathA, csv_fil
                         'Value': subscription_cost})
 
         # ---------- Route ----------
-        writer.writerow({'Category': 'route CS', 'Description': 'Chargers number',
+        writer.writerow({'Category': 'route CS', 'Description': 'Charger sessions number',
                         'Value': pyo.value(m.CS_route)})
+        writer.writerow({'Category': 'route CS', 'Description': 'Max simultaneous sessions per timestep',
+                        'Value': max(round(sum(pyo.value(m.Charging_route[b, t]) for b in m.b)) for t in m.t)})
         writer.writerow({'Category': 'route CS', 'Description': 'Infrastructure Cost',
                         'Value': route_infra})
         writer.writerow({'Category': 'route CS', 'Description': 'Electricity Cost',
                         'Value': route_elec})
+        writer.writerow({'Category': 'route CS', 'Description': 'Electricity energy consumption',
+                        'Value': route_elec_con})
 
         # ---------- Total ----------
         writer.writerow({'Category': 'Total', 'Description': 'Infrastructure Cost',
